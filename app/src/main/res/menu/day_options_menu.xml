@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/group"
+        android:checkableBehavior="single">
+        <item
+            android:checked="true"
+            android:id="@+id/menuOneDay"
+            android:title="1-Day View" />
+        <item
+            android:id="@+id/menuThreeDay"
+            android:title="3-Day View" />
+        <item
+            android:id="@+id/menuWeek"
+            android:title="Week View" />
+    </group>
+</menu>

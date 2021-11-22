@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fff"
+    tools:context=".others.ThirdTry">
+
+    <com.app.clinicdiarydemo.alamview.WeekView
+        android:id="@+id/weekView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"
+        app:columnGap="8dp"
+        app:dayBackgroundColor="#05000000"
+        app:eventPadding="10dp"
+        app:eventTextColor="@android:color/black"
+        app:eventTextSize="15sp"
+        app:headerColumnBackground="#ffffff"
+        app:headerColumnPadding="8dp"
+        app:headerColumnTextColor="@color/toolbar_text"
+        app:headerRowBackgroundColor="@color/toolbar"
+        app:headerRowPadding="12dp"
+        app:hourHeight="60dp"
+        app:noOfVisibleDays="1"
+        app:nowLineColor="@color/purple_500"
+        app:nowLineThickness="2dp"
+        app:showNowLine="true"
+        app:textSize="11sp"
+        app:todayBackgroundColor="#1848adff"
+        app:todayHeaderTextColor="@color/purple_500" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
