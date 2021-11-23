@@ -3,6 +3,7 @@ package com.app.clinicdiarydemo.ultimate
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
@@ -11,7 +12,9 @@ import com.app.clinicdiarydemo.databinding.RowItemWeekGridBinding
 
 class MyWeekViewAdapter(
     private var daysList: List<String>,
+    private var daysListForEvent: List<String>,
     private val daysCount: Int,
+    val showAddEventSheet: (String, String) -> Unit
 ) :
     RecyclerView.Adapter<MyWeekViewAdapter.ViewHolder>() {
     inner class ViewHolder(var binding: RowItemWeekGridBinding) :
@@ -31,6 +34,28 @@ class MyWeekViewAdapter(
                         R.drawable.custom_week_grid_white
                     )
 
+                when (daysList.size) {
+                    1 -> {
+                        lnrMultiEvents.visibility = View.GONE
+                        if (position % 2 == 0) {
+                            lnrDayEvents.visibility = View.VISIBLE
+                        } else {
+                            lnrDayEvents.visibility = View.GONE
+                        }
+                    }
+                    3, 7 -> {
+                        lnrDayEvents.visibility = View.GONE
+                        if (position % 2 == 0) {
+                            lnrMultiEvents.visibility = View.VISIBLE
+                        } else {
+                            lnrMultiEvents.visibility = View.GONE
+                        }
+
+                    }
+                }
+
+
+
                 myView.setOnClickListener {
 
                     Log.d("TAG", "onBindViewHolder: CELL NUMBER - ${position + 1}")
@@ -38,7 +63,7 @@ class MyWeekViewAdapter(
                     when (daysList.size) {
                         1 -> {
 
-                            Log.d("TAG", "onBindViewHolder: SELECTED DATE - ${daysList[0]}")
+                            Log.d("TAG", "onBindViewHolder: SELECTED DATE - ${daysListForEvent[0]}")
 
                             Log.d(
                                 "TAG",
@@ -46,15 +71,19 @@ class MyWeekViewAdapter(
                                     MyUtils.doSomethingFor1DayView(position)
                                 }"
                             )
+
+                            showAddEventSheet(
+                                daysListForEvent[0],
+                                MyUtils.doSomethingFor1DayView(position)
+                            )
                         }
-                        3 -> {
+                        3, 7 -> {
 
                             Log.d(
                                 "TAG",
                                 "onBindViewHolder: SELECTED DATE - ${
-                                    daysList[MyUtils.getSelectedDateFromCellNumber(
-                                        position+1,
-                                        3
+                                    daysListForEvent[MyUtils.getSelectedDateFromCellNumber(
+                                        position + 1
                                     )]
                                 }"
                             )
@@ -62,44 +91,34 @@ class MyWeekViewAdapter(
                             Log.d(
                                 "TAG",
                                 "onBindViewHolder: SELECTED TIME SLOT - ${
-                                    MyUtils.doSomethingFor1or3DaysView(position, 3)
+                                    MyUtils.doSomethingFor3or7DaysView(position + 1)
                                 }"
                             )
 
-                        }
-                        7 -> {
-
-                            Log.d(
-                                "TAG",
-                                "onBindViewHolder: SELECTED DATE - ${
-                                    daysList[MyUtils.getSelectedDateFromCellNumber(
-                                        position+1,
-                                        7
-                                    )]
-                                }"
-                            )
-
-                            Log.d(
-                                "TAG",
-                                "onBindViewHolder: SELECTED TIME SLOT - ${
-                                    MyUtils.doSomethingFor1or3DaysView(position, 7)
-                                }"
+                            showAddEventSheet(
+                                daysListForEvent[MyUtils.getSelectedDateFromCellNumber(
+                                    position + 1
+                                )], MyUtils.doSomethingFor3or7DaysView(position + 1)
                             )
 
                         }
                     }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        myView.background =
+                        /*myView.background =
                             AppCompatResources.getDrawable(
                                 itemView.context,
                                 R.drawable.custom_week_grid_blue
-                            )
+                            )*/
                     }
+
+
                 }
             }
         }
     }
 
     override fun getItemCount() = 24 * daysCount
+
+
 }

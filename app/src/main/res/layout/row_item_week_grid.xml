@@ -1,14 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="wrap_content">
 
     <View
         android:id="@+id/myView"
         android:layout_width="match_parent"
+        android:layout_height="60dp"
         android:background="@drawable/custom_week_grid_white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_height="60dp"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
+    <LinearLayout
+        android:id="@+id/lnrDayEvents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include
+            android:id="@+id/lnrEvent1"
+            layout="@layout/row_item_events"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:visibility="visible" />
+
+        <include
+            android:id="@+id/lnrEvent2"
+            layout="@layout/row_item_events"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="5dp"
+            android:layout_weight="1"
+            android:visibility="visible" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/lnrMultiEvents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include
+            android:id="@+id/lnrEvent3"
+            layout="@layout/row_item_event_dots"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:visibility="visible" />
+
+        <include
+            android:id="@+id/lnrEvent4"
+            layout="@layout/row_item_event_dots"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:visibility="visible" />
+
+        <include
+            android:id="@+id/lnrEvent5"
+            layout="@layout/row_item_event_dots"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:visibility="visible" />
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

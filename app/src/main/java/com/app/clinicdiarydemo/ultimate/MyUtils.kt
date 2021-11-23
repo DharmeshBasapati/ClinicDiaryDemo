@@ -1,8 +1,12 @@
 package com.app.clinicdiarydemo.ultimate
 
-import android.util.Log
+import org.joda.time.DateTime
 
 object MyUtils {
+
+    private lateinit var timeSlotSelectionList: List<List<Int>>
+
+    private lateinit var myChunkedCellsList: List<List<Int>>
 
     private val myTimeSlotsList = arrayListOf(
         "12 AM",
@@ -31,19 +35,10 @@ object MyUtils {
         "11 PM"
     )
 
-    fun doSomethingFor1or3DaysView(cellNumber: Int, daysCount: Int): String {
+    fun doSomethingFor3or7DaysView(cellNumber: Int): String {
+        getTimeSlotSelectionList().indices.forEach { i ->
 
-        val myList = arrayListOf<Int>()
-
-        (1..(24 * daysCount)).forEach { i ->
-            myList.add(i)
-        }
-
-        val newMyList = myList.chunked(daysCount)
-
-        newMyList.indices.forEach { i ->
-
-            if (newMyList[i].contains(cellNumber)) {
+            if (getTimeSlotSelectionList()[i].contains(cellNumber)) {
 
                 return myTimeSlotsList[i]
 
@@ -51,12 +46,24 @@ object MyUtils {
         }
 
         return ""
-
     }
+
+    fun setTimeSlotsSelectionList(daysCount: Int) {
+
+        val myList = arrayListOf<Int>()
+
+        (1..(24 * daysCount)).forEach { i ->
+            myList.add(i)
+        }
+
+        timeSlotSelectionList = myList.chunked(daysCount)
+    }
+
+    private fun getTimeSlotSelectionList(): List<List<Int>> = timeSlotSelectionList
 
     fun doSomethingFor1DayView(cellNumber: Int): String {
 
-        for (i in 1 until myTimeSlotsList.size) {
+        for (i in 0 until myTimeSlotsList.size) {
             if (i == cellNumber) {
                 return myTimeSlotsList[i]
             }
@@ -65,7 +72,21 @@ object MyUtils {
         return ""
     }
 
-    fun getSelectedDateFromCellNumber(cellNumber: Int, daysCount: Int): Int {
+    fun getSelectedDateFromCellNumber(cellNumber: Int): Int {
+
+        getChunkedCellsList().indices.forEach { i ->
+
+            if (getChunkedCellsList()[i].contains(cellNumber)) {
+
+                return i
+
+            }
+        }
+
+        return 0
+    }
+
+    fun setDaysListAccordingToViews(daysCount: Int) {
 
         val myRowOneList = arrayListOf<Int>()
 
@@ -79,20 +100,39 @@ object MyUtils {
 
         }
 
-        Log.d("TAG", "getSelectedDateFromCellNumber: $myRowOneList")
+        myChunkedCellsList = myRowOneList.chunked(24)
+    }
 
-        val myUpdatedList = myRowOneList.chunked(24)
+    private fun getChunkedCellsList(): List<List<Int>> = myChunkedCellsList
 
-        myUpdatedList.indices.forEach { i ->
+    fun getDateNumber(dateTime: DateTime) = Integer.parseInt(dateTime.toString("dd"))
 
-            if (myUpdatedList[i].contains(cellNumber)) {
+    private fun getDate(dateTime: DateTime): String = dateTime.toString("E, MMM dd, YYYY")
 
-                return i
+    private fun getDateToShowInHeader(dateTime: DateTime): String = dateTime.toString("dd\nE")
 
-            }
+    fun getMonth(dateTime: DateTime): String = dateTime.toString("MMMM YYYY")
+
+    fun getDaysListToShowInHeader(): ArrayList<String> {
+
+        val daysListToShowInHeader = ArrayList<String>()
+
+        for (i in 1..DateTime().dayOfMonth().maximumValue) {
+            val formattedDate = getDateToShowInHeader(DateTime().withDayOfMonth(i))
+            daysListToShowInHeader.add(formattedDate)
         }
+        return daysListToShowInHeader
+    }
 
-        return 0
+    fun getDaysListToUseInEvent(): ArrayList<String> {
+
+        val daysListToUseInEvent = ArrayList<String>()
+
+        for (i in 1..DateTime().dayOfMonth().maximumValue) {
+            val formattedDate = getDate(DateTime().withDayOfMonth(i))
+            daysListToUseInEvent.add(formattedDate)
+        }
+        return daysListToUseInEvent
     }
 
 }

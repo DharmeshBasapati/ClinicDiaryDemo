@@ -2,6 +2,7 @@ package com.app.clinicdiarydemo.ultimate
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -9,13 +10,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.app.clinicdiarydemo.R
 import com.app.clinicdiarydemo.databinding.ActivityTheUltimateTryBinding
+import com.app.clinicdiarydemo.ultimate.MyUtils.getDateNumber
+import com.app.clinicdiarydemo.ultimate.MyUtils.getMonth
 import org.joda.time.DateTime
+import org.joda.time.LocalDate
 import java.util.*
 import kotlin.collections.ArrayList
 
 class TheUltimateTry : AppCompatActivity(), EventScrollListener {
 
     private lateinit var binding: ActivityTheUltimateTryBinding
+
+    private var isDayViewSelected: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,31 +48,41 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
 
     private fun setDaysView(daysCount: Int) {
 
-        val daysList = ArrayList<String>()
-
-        for (i in 1..DateTime().dayOfMonth().maximumValue) {
-            val formattedDate = getDate(DateTime().withDayOfMonth(i))
-            daysList.add(formattedDate)
-        }
-
-//        val timeList = ArrayList<String>()
-//
-//        for (i in 1..DateTime().hourOfDay().maximumValue) {
-//            val formattedDate = getDate(DateTime().withDayOfMonth(i))
-//            daysList.add(formattedDate)
-//        }
-
-
         binding.viewPager.adapter =
-            MyViewPagerAdapter(this@TheUltimateTry, daysList.chunked(daysCount), daysCount)
+            MyViewPagerAdapter(
+                this@TheUltimateTry,
+                MyUtils.getDaysListToShowInHeader().chunked(daysCount),
+                MyUtils.getDaysListToUseInEvent().chunked(daysCount),
+                daysCount
+            ) { selectedDate, selectedTimeSlot ->
+                Log.d("TAG", "CALLBACK OF CALLBACK CALLED")
+                showAddEventSheet(selectedDate, selectedTimeSlot)
+
+            }
 
         binding.rvHours.layoutManager = LinearLayoutManager(this@TheUltimateTry)
 
         binding.rvHours.adapter = MyHoursListAdapter()
+
+        if (isDayViewSelected) {
+            binding.viewPager.currentItem = getDateNumber(DateTime().withDate(LocalDate.now())) - 1
+        } else {
+            val myDatesList = ArrayList<Int>()
+            for (i in 1..DateTime().dayOfMonth().maximumValue) {
+                val formattedDate = getDateNumber(DateTime().withDayOfMonth(i))
+                myDatesList.add(formattedDate)
+            }
+
+            val updatedChunkedList = myDatesList.chunked(daysCount)
+
+            updatedChunkedList.forEachIndexed { index, list ->
+                if (list.contains(getDateNumber(DateTime().withDate(LocalDate.now())))) {
+                    binding.viewPager.currentItem = index
+                }
+            }
+        }
     }
 
-    private fun getDate(dateTime: DateTime) = dateTime.toString("dd\nE")
-    private fun getMonth(dateTime: DateTime) = dateTime.toString("MMMM YYYY")
 
     override fun onEventScrolled(scrollXPos: Int, scrollYPos: Int) {
         binding.rvHours.scrollBy(scrollXPos, scrollYPos)
@@ -82,17 +98,38 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
 
         when (item.itemId) {
             R.id.menuOneDay -> {
+                isDayViewSelected = true
+                MyUtils.setDaysListAccordingToViews(1)
+                MyUtils.setTimeSlotsSelectionList(1)
                 setDaysView(1)
 
             }
             R.id.menuThreeDay -> {
+                isDayViewSelected = false
+                MyUtils.setDaysListAccordingToViews(3)
+                MyUtils.setTimeSlotsSelectionList(3)
                 setDaysView(3)
             }
             R.id.menuWeek -> {
+                isDayViewSelected = false
+                MyUtils.setDaysListAccordingToViews(7)
+                MyUtils.setTimeSlotsSelectionList(7)
                 setDaysView(7)
             }
         }
         return true
+    }
+
+
+    private fun showAddEventSheet(selectedDate: String, selectedTimeSlot: String) {
+
+        val addEventBottomSheet = AddEventBottomSheet()
+        val bundle = Bundle()
+        bundle.putString("IN_DATE", selectedDate)
+        bundle.putString("IN_TIME", selectedTimeSlot)
+        addEventBottomSheet.arguments = bundle
+        addEventBottomSheet.show(supportFragmentManager, "AddEventBottomSheet")
+
     }
 
 }
