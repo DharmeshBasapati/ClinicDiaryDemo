@@ -1,13 +1,18 @@
 package com.app.clinicdiarydemo.ultimate
 
-import android.os.Build
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.provider.CalendarContract
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.app.clinicdiarydemo.R
 import com.app.clinicdiarydemo.databinding.ActivityTheUltimateTryBinding
 import com.app.clinicdiarydemo.ultimate.MyUtils.getDateNumber
@@ -19,6 +24,7 @@ import kotlin.collections.ArrayList
 
 class TheUltimateTry : AppCompatActivity(), EventScrollListener {
 
+    private lateinit var requestMultiplePermissions: ActivityResultLauncher<Array<String>>
     private lateinit var binding: ActivityTheUltimateTryBinding
 
     private var isDayViewSelected: Boolean = true
@@ -32,16 +38,27 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
 
         setDaysView(1)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-            binding.rvHours.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    super.onScrolled(recyclerView, dx, dy)
+       /* requestMultiplePermissions =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+                permissions.entries.forEach {
+                    Log.d("TAG", "${it.key} = ${it.value}")
                 }
+                if (permissions[Manifest.permission.WRITE_CALENDAR] == true && permissions[Manifest.permission.READ_CALENDAR] == true) {
+                    Log.d("TAG", "Permission granted")
+                } else {
+                    Log.d("TAG", "Permission not granted")
+                }
+            }
+        checkPermission()*/
+    }
 
-            })
-
+    private fun checkPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_CALENDAR
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestMultiplePermissions.launch(arrayOf(Manifest.permission.WRITE_CALENDAR, Manifest.permission.READ_CALENDAR))
         }
 
     }

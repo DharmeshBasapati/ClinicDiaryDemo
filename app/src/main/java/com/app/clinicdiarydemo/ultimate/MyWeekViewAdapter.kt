@@ -1,6 +1,5 @@
 package com.app.clinicdiarydemo.ultimate
 
-import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -36,19 +35,31 @@ class MyWeekViewAdapter(
 
                 when (daysList.size) {
                     1 -> {
-                        lnrMultiEvents.visibility = View.GONE
-                        if (position % 2 == 0) {
+                        lnr3Events.visibility = View.GONE
+                        lnr7Events.visibility = View.GONE
+                        if (position == 4 || position == 10 || position == 15) {
                             lnrDayEvents.visibility = View.VISIBLE
                         } else {
                             lnrDayEvents.visibility = View.GONE
                         }
                     }
-                    3, 7 -> {
+                    3 -> {
                         lnrDayEvents.visibility = View.GONE
-                        if (position % 2 == 0) {
-                            lnrMultiEvents.visibility = View.VISIBLE
+                        lnr7Events.visibility = View.GONE
+                        if (position == 4 || position == 10 || position == 15) {
+                            lnr3Events.visibility = View.VISIBLE
                         } else {
-                            lnrMultiEvents.visibility = View.GONE
+                            lnr3Events.visibility = View.GONE
+                        }
+
+                    }
+                    7 -> {
+                        lnrDayEvents.visibility = View.GONE
+                        lnr3Events.visibility = View.GONE
+                        if (position == 4 || position == 10 || position == 15) {
+                            lnr7Events.visibility = View.VISIBLE
+                        } else {
+                            lnr7Events.visibility = View.GONE
                         }
 
                     }
@@ -103,16 +114,6 @@ class MyWeekViewAdapter(
 
                         }
                     }
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        /*myView.background =
-                            AppCompatResources.getDrawable(
-                                itemView.context,
-                                R.drawable.custom_week_grid_blue
-                            )*/
-                    }
-
-
                 }
             }
         }

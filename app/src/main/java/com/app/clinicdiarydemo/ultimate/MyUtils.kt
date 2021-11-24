@@ -1,6 +1,11 @@
 package com.app.clinicdiarydemo.ultimate
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import org.joda.time.DateTime
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 object MyUtils {
 
@@ -107,7 +112,7 @@ object MyUtils {
 
     fun getDateNumber(dateTime: DateTime) = Integer.parseInt(dateTime.toString("dd"))
 
-    private fun getDate(dateTime: DateTime): String = dateTime.toString("E, MMM dd, YYYY")
+    private fun getDate(dateTime: DateTime): String = dateTime.toString("E, MMM dd, y")
 
     private fun getDateToShowInHeader(dateTime: DateTime): String = dateTime.toString("dd\nE")
 
@@ -133,6 +138,12 @@ object MyUtils {
             daysListToUseInEvent.add(formattedDate)
         }
         return daysListToUseInEvent
+    }
+
+    fun getTimestampFromDateInString(date: String): Long {
+        val sdf = SimpleDateFormat("E, MMM dd, y", Locale.getDefault())
+        val date1 = sdf.parse(date)
+        return date1.time
     }
 
 }

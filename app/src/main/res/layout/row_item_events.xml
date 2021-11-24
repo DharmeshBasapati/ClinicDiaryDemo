@@ -2,38 +2,22 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingStart="2dp"
-    android:paddingEnd="2dp"
-    android:background="@color/purple_500">
-
-    <TextView
-        android:id="@+id/tvPractitioner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-
-        android:background="#E84949"
-        android:gravity="center"
-        android:padding="5dp"
-        android:text="Emma Watson"
-        android:textColor="@color/white"
-        app:layout_constraintTop_toTopOf="parent" />
+    android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/tvActualEvent1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-
         android:background="@color/purple_200"
         android:gravity="center"
         android:padding="10dp"
-        android:text="Patient Name: Sarah Parker\n\nTime: 10:00 - 11:00 AM\nTreatment: Botox Treatment"
+        android:textSize="12sp"
+        android:text="Patient Name: Sarah Parker\nTime: 10:00 - 11:00 AM\nTreatment: Botox Treatment\nPractitioner: Rahul Dravid"
         android:textColor="@color/black"
-        android:textStyle="bold"
         android:visibility="visible"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvPractitioner" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

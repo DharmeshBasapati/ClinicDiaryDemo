@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.app.clinicdiarydemo.databinding.WeeklyViewHourTextviewBinding
 import org.joda.time.DateTime
 
-class MyHoursListAdapter(): RecyclerView.Adapter<MyHoursListAdapter.ViewHolder>() {
+class MyHoursListAdapter: RecyclerView.Adapter<MyHoursListAdapter.ViewHolder>() {
     inner class ViewHolder(var binding:WeeklyViewHourTextviewBinding): RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(

@@ -21,7 +21,6 @@ class EventsWithPractitionerAdapter(val showPractitioner: Boolean) :
 
             binding.apply {
 
-                tvPractitioner.text = "Practioner Number #${position + 1}"
 
             }
 

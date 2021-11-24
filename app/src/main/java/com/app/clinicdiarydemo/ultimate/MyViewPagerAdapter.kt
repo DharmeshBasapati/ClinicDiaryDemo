@@ -17,7 +17,7 @@ class MyViewPagerAdapter(
     val listener: EventScrollListener,
     private val daysList: List<List<String>>,
     private val daysListForEvent: List<List<String>>,
-    val daysCount: Int,
+    private val daysCount: Int,
     val showAddEventSheet: (String,String) -> Unit
 
 ) : RecyclerView.Adapter<MyViewPagerAdapter.ViewHolder>() {
