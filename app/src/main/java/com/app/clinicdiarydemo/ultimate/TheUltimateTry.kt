@@ -38,29 +38,6 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
 
         setDaysView(1)
 
-       /* requestMultiplePermissions =
-            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-                permissions.entries.forEach {
-                    Log.d("TAG", "${it.key} = ${it.value}")
-                }
-                if (permissions[Manifest.permission.WRITE_CALENDAR] == true && permissions[Manifest.permission.READ_CALENDAR] == true) {
-                    Log.d("TAG", "Permission granted")
-                } else {
-                    Log.d("TAG", "Permission not granted")
-                }
-            }
-        checkPermission()*/
-    }
-
-    private fun checkPermission() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.WRITE_CALENDAR
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestMultiplePermissions.launch(arrayOf(Manifest.permission.WRITE_CALENDAR, Manifest.permission.READ_CALENDAR))
-        }
-
     }
 
     private fun setDaysView(daysCount: Int) {

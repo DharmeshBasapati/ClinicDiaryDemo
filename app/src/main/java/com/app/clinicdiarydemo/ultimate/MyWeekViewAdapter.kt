@@ -37,7 +37,7 @@ class MyWeekViewAdapter(
                     1 -> {
                         lnr3Events.visibility = View.GONE
                         lnr7Events.visibility = View.GONE
-                        if (position == 4 || position == 10 || position == 15) {
+                        if (position == 4 ) {
                             lnrDayEvents.visibility = View.VISIBLE
                         } else {
                             lnrDayEvents.visibility = View.GONE
@@ -46,7 +46,7 @@ class MyWeekViewAdapter(
                     3 -> {
                         lnrDayEvents.visibility = View.GONE
                         lnr7Events.visibility = View.GONE
-                        if (position == 4 || position == 10 || position == 15) {
+                        if (position == 4) {
                             lnr3Events.visibility = View.VISIBLE
                         } else {
                             lnr3Events.visibility = View.GONE
@@ -56,7 +56,7 @@ class MyWeekViewAdapter(
                     7 -> {
                         lnrDayEvents.visibility = View.GONE
                         lnr3Events.visibility = View.GONE
-                        if (position == 4 || position == 10 || position == 15) {
+                        if (position == 4) {
                             lnr7Events.visibility = View.VISIBLE
                         } else {
                             lnr7Events.visibility = View.GONE

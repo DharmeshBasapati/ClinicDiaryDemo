@@ -1,7 +1,5 @@
 package com.app.clinicdiarydemo.ultimate
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import org.joda.time.DateTime
 import java.text.SimpleDateFormat
 import java.util.*
@@ -140,10 +138,41 @@ object MyUtils {
         return daysListToUseInEvent
     }
 
-    fun getTimestampFromDateInString(date: String): Long {
-        val sdf = SimpleDateFormat("E, MMM dd, y", Locale.getDefault())
-        val date1 = sdf.parse(date)
-        return date1.time
+    fun getDateFromString(date: String, dateFormat: String): Date {
+        val sdf = SimpleDateFormat(dateFormat, Locale.getDefault())
+        return sdf.parse(date)
+    }
+
+    fun addHourToSelectedDate(date: Date): Date {
+        val calendar = Calendar.getInstance()
+        calendar.time = date
+        calendar.add(Calendar.HOUR, 1)
+        return calendar.time
+    }
+
+    fun dateFromUTC(date: Date): Date {
+        return Date(date.time + Calendar.getInstance().timeZone.getOffset(Date().time))
+    }
+
+    fun convertDateToString(date: Date, newDateFormat: String): String {
+        val dateFormatter = SimpleDateFormat(newDateFormat, Locale.getDefault())
+        return dateFormatter.format(date)
+    }
+
+    fun convertStringDateToMillis(dateInString: String): Long {
+        return 0L
+    }
+
+    fun convertDateInMillisToString(dateInMillis: Long): String {
+        return ""
+    }
+
+    fun convertStringDateToTimestamp(dateInString: String): Long {
+        return 0L
+    }
+
+    fun convertTimestampToString(timestamp: Long): String {
+        return ""
     }
 
 }

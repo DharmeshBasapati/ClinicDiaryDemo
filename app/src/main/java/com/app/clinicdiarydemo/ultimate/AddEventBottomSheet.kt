@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.app.clinicdiarydemo.databinding.AddEventBottomSheetBinding
+import com.app.clinicdiarydemo.ultimate.MyUtils.dateFromUTC
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -38,28 +39,59 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
         binding = AddEventBottomSheetBinding.inflate(layoutInflater)
 
         val selectedDate = arguments?.get("IN_DATE")
-        val selectedTime = arguments?.get("IN_TIME")
+        val selectedTime = arguments?.getString("IN_TIME")//1 PM
+
+        Log.d(
+            "TAG",
+            "SELECTED TIME : ${
+                MyUtils.convertDateToString(
+                    MyUtils.getDateFromString(
+                        selectedTime.toString(),
+                        "hh a"
+                    ), "hh:mm a"
+                )
+            }"
+        )
+        Log.d(
+            "TAG",
+            "WITH 1 HOUR ADDED : ${
+                MyUtils.convertDateToString(
+                    MyUtils.addHourToSelectedDate(
+                        MyUtils.getDateFromString(
+                            selectedTime.toString(),
+                            "hh a"
+                        )
+                    ), "hh:mm a"
+                )
+            }"
+        )
 
         binding.apply {
 
             tvStartDate.text = selectedDate.toString()
+
             tvEndDate.text = selectedDate.toString()
-            tvStartTime.text = "04:20"
-            tvEndTime.text = "04:50"
+
+            tvStartTime.text = MyUtils.convertDateToString(
+                MyUtils.getDateFromString(
+                    selectedTime.toString(),
+                    "hh a"
+                ), "hh:mm a"
+            )
+
+            tvEndTime.text = MyUtils.convertDateToString(
+                MyUtils.addHourToSelectedDate(
+                    MyUtils.getDateFromString(
+                        selectedTime.toString(),
+                        "hh a"
+                    )
+                ), "hh:mm a"
+            )
 
             tvStartDate.setOnClickListener {
                 openDatePicker(
-                    "Start Date",
-                    MyUtils.getTimestampFromDateInString(tvStartDate.text.toString())
+                    MyUtils.getDateFromString(tvStartDate.text.toString(), "E, MMM dd, y")
                 )
-            }
-
-            tvEndDate.setOnClickListener {
-                openDatePicker(
-                    "End Date",
-                    MyUtils.getTimestampFromDateInString(tvEndDate.text.toString())
-                )
-
             }
 
             tvStartTime.setOnClickListener {
@@ -67,12 +99,11 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
                     "Start Time",
                     Integer.parseInt(
                         tvStartTime.text.toString()
-                            .substring(0, tvStartTime.text.toString().indexOf(":"))
+                            .substring(0, 2)
                     ),
                     Integer.parseInt(
                         tvStartTime.text.toString().substring(
-                            tvStartTime.text.toString().indexOf(":")+1,
-                            tvStartTime.text.toString().length
+                            3, 5
                         )
                     )
                 )
@@ -83,12 +114,11 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
                     "End Time",
                     Integer.parseInt(
                         tvEndTime.text.toString()
-                            .substring(0, tvEndTime.text.toString().indexOf(":"))
+                            .substring(0, 2)
                     ),
                     Integer.parseInt(
                         tvEndTime.text.toString().substring(
-                            tvEndTime.text.toString().indexOf(":")+1,
-                            tvEndTime.text.toString().length
+                            3, 5
                         )
                     )
                 )
@@ -102,40 +132,28 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
                 checkPermission()
             }
 
-            switchAllDay.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    tvStartTime.visibility = View.GONE
-                    tvEndTime.visibility = View.GONE
-                } else {
-                    tvStartTime.visibility = View.VISIBLE
-                    tvEndTime.visibility = View.VISIBLE
-                }
-            }
         }
 
 
         return binding.root
     }
 
-    private fun openDatePicker(pickerTitle: String, timeStamp: Long) {
+    private fun openDatePicker(date: Date) {
         val datePicker =
             MaterialDatePicker.Builder.datePicker()
-                .setSelection(timeStamp)
+                .setSelection(dateFromUTC(date).time)
                 .build()
         datePicker.show(requireActivity().supportFragmentManager, "DATE");
         datePicker.addOnPositiveButtonClickListener {
-            Log.d("TAG", "openDatePicker: ${datePicker.selection?.let { it1 -> getDateTime(it1) }}")
-            if (pickerTitle == "Start Date") {
-                binding.tvStartDate.text = datePicker.selection?.let { it1 -> getDateTime(it1) }
-            } else {
-                binding.tvEndDate.text = datePicker.selection?.let { it1 -> getDateTime(it1) }
-            }
+            binding.tvStartDate.text = datePicker.selection?.let { it1 -> getDateTime(it1) }
+            binding.tvEndDate.text = datePicker.selection?.let { it1 -> getDateTime(it1) }
         }
     }
 
+
     private fun getDateTime(s: Long): String? {
         return try {
-            val sdf = SimpleDateFormat("E, MMM dd, yyyy", Locale.getDefault())
+            val sdf = SimpleDateFormat("E, MMM dd, y", Locale.getDefault())
             val netDate = Date(s)
             sdf.format(netDate)
         } catch (e: Exception) {
@@ -152,11 +170,30 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
                 .build()
         picker.show(requireActivity().supportFragmentManager, pickerTitle);
         picker.addOnPositiveButtonClickListener {
-            Log.d("TAG", "openTimePicker: ${picker.hour}:${picker.minute}")
+
             if (pickerTitle == "Start Time") {
-                binding.tvStartTime.text = "${picker.hour}:${picker.minute}"
+                binding.tvStartTime.text = MyUtils.convertDateToString(
+                    MyUtils.getDateFromString(
+                        "${picker.hour}:${picker.minute}",
+                        "HH:mm"
+                    ), "hh:mm a"
+                )
+
+                binding.tvEndTime.text = MyUtils.convertDateToString(
+                    MyUtils.addHourToSelectedDate(
+                        MyUtils.getDateFromString(
+                            "${picker.hour}:${picker.minute}",
+                            "HH:mm"
+                        )
+                    ), "hh:mm a"
+                )
             } else {
-                binding.tvEndTime.text = "${picker.hour}:${picker.minute}"
+                binding.tvEndTime.text = MyUtils.convertDateToString(
+                    MyUtils.getDateFromString(
+                        "${picker.hour}:${picker.minute}",
+                        "HH:mm"
+                    ), "hh:mm a"
+                )
             }
         }
     }
@@ -210,11 +247,7 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
 
         event.put(CalendarContract.Events.DTSTART, startMillis)
         event.put(CalendarContract.Events.DTEND, endMillis)
-        var isAllDay = 0
-        if (binding.switchAllDay.isChecked) {
-            isAllDay = 1
-        }
-        event.put(CalendarContract.Events.ALL_DAY, isAllDay) // 0 for false, 1 for true
+        event.put(CalendarContract.Events.ALL_DAY, 0) // 0 for false, 1 for true
         event.put(CalendarContract.Events.HAS_ALARM, 1) // 0 for false, 1 for true
         val timeZone = TimeZone.getDefault().id
         event.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone)
