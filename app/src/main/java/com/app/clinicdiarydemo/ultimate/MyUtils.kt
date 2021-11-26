@@ -1,5 +1,9 @@
 package com.app.clinicdiarydemo.ultimate
 
+import com.app.clinicdiarydemo.ultimate.Constants.dateAndDayFormatToShowInHeader
+import com.app.clinicdiarydemo.ultimate.Constants.dateFormatToShowWhileAddingEvent
+import com.app.clinicdiarydemo.ultimate.Constants.dateNumberFormat
+import com.app.clinicdiarydemo.ultimate.Constants.monthYearFormatToShowOnToolbar
 import org.joda.time.DateTime
 import java.text.SimpleDateFormat
 import java.util.*
@@ -108,13 +112,13 @@ object MyUtils {
 
     private fun getChunkedCellsList(): List<List<Int>> = myChunkedCellsList
 
-    fun getDateNumber(dateTime: DateTime) = Integer.parseInt(dateTime.toString("dd"))
+    fun getDateNumber(dateTime: DateTime) = Integer.parseInt(dateTime.toString(dateNumberFormat))
 
-    private fun getDate(dateTime: DateTime): String = dateTime.toString("E, MMM dd, y")
+    private fun getDate(dateTime: DateTime): String = dateTime.toString(dateFormatToShowWhileAddingEvent)
 
-    private fun getDateToShowInHeader(dateTime: DateTime): String = dateTime.toString("dd\nE")
+    private fun getDateToShowInHeader(dateTime: DateTime): String = dateTime.toString(dateAndDayFormatToShowInHeader)
 
-    fun getMonth(dateTime: DateTime): String = dateTime.toString("MMMM YYYY")
+    fun getMonth(dateTime: DateTime): String = dateTime.toString(monthYearFormatToShowOnToolbar)
 
     fun getDaysListToShowInHeader(): ArrayList<String> {
 
@@ -159,20 +163,12 @@ object MyUtils {
         return dateFormatter.format(date)
     }
 
-    fun convertStringDateToMillis(dateInString: String): Long {
-        return 0L
+    fun convertMillisToDateInString(milliSeconds: Long, dateFormat: String): String {
+        val formatter = SimpleDateFormat(dateFormat,Locale.getDefault())
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = milliSeconds
+        return formatter.format(calendar.time)
     }
 
-    fun convertDateInMillisToString(dateInMillis: Long): String {
-        return ""
-    }
-
-    fun convertStringDateToTimestamp(dateInString: String): Long {
-        return 0L
-    }
-
-    fun convertTimestampToString(timestamp: Long): String {
-        return ""
-    }
 
 }
