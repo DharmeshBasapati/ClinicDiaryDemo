@@ -1,17 +1,14 @@
 package com.app.clinicdiarydemo.ultimate
 
-import android.content.ContentValues
 import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.CalendarContract
 import android.provider.CalendarContract.Events
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.result.ActivityResultLauncher
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.app.clinicdiarydemo.R
@@ -19,29 +16,26 @@ import com.app.clinicdiarydemo.databinding.ActivityTheUltimateTryBinding
 import com.app.clinicdiarydemo.network.builder.RetrofitBuilder
 import com.app.clinicdiarydemo.network.model.InsertCalendarRequest
 import com.app.clinicdiarydemo.network.model.InsertCalendarResponse
-import com.app.clinicdiarydemo.network.services.APIServices
+import com.app.clinicdiarydemo.ultimate.Constants.accessTokenForCalendarAPI
+import com.app.clinicdiarydemo.ultimate.Constants.apiKey
+import com.app.clinicdiarydemo.ultimate.Constants.calendarId
+import com.app.clinicdiarydemo.ultimate.Constants.clientID
 import com.app.clinicdiarydemo.ultimate.Constants.dateAndTimeFormatForAddingEventToCalendar
 import com.app.clinicdiarydemo.ultimate.MyUtils.getDateNumber
 import com.app.clinicdiarydemo.ultimate.MyUtils.getMonth
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.tasks.Task
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
+import net.openid.appauth.*
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 import kotlin.collections.ArrayList
 
 
 class TheUltimateTry : AppCompatActivity(), EventScrollListener {
 
+    private lateinit var authService: AuthorizationService
     private lateinit var binding: ActivityTheUltimateTryBinding
 
     private val events: ArrayList<com.app.clinicdiarydemo.ultimate.Events> = ArrayList()
@@ -55,77 +49,74 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
 
         supportActionBar?.title = getMonth(DateTime.now())
 
-        //getAccessToken()
+        fetchAccessToken()
 
-        //makeOAuthToken()
-
-        insertNewCalendarUsingApi()
+        //insertNewCalendarUsingApi("Clinic Diary")
 
         //addNewCalendarType()
 
         setDaysView(1)
 
         //syncEventsFromCalendar()
+    }
 
-        Log.d(
-            "TAG",
-            "MORNING WALK START DATE & TIME: ${
-                MyUtils.convertMillisToDateInString(
-                    1637969400000,
-                    dateAndTimeFormatForAddingEventToCalendar
-                )
-            }"
+    private fun fetchAccessToken() {
+
+        val serviceConfig = AuthorizationServiceConfiguration(
+            Uri.parse("https://accounts.google.com/o/oauth2/auth"),
+            Uri.parse("https://oauth2.googleapis.com/token")
         )
-        Log.d(
-            "TAG",
-            "MORNING WALK END DATE & TIME: ${
-                MyUtils.convertMillisToDateInString(
-                    1637973000000,
-                    dateAndTimeFormatForAddingEventToCalendar
-                )
-            }"
+
+        val authRequestBuilder = AuthorizationRequest.Builder(
+            serviceConfig,
+            clientID,
+            ResponseTypeValues.CODE,
+            Uri.parse("http://localhost/urn:ietf:wg:oauth:2.0:oob")
         )
+
+        authService = AuthorizationService(this)
+
+        val authRequest =
+            authRequestBuilder.setScope("https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events")
+                .build()
+
+        val authIntent = authService.getAuthorizationRequestIntent(authRequest)
+
+        startActivityForResult(authIntent, 111)
+
     }
 
 
 
-    private fun makeOAuthToken(){
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 111) {
 
-        val url = "https://accounts.google.com/o/oauth2/v2/"
+            val authResponse = data?.let { AuthorizationResponse.fromIntent(it) }
+            Log.d(
+                "TAG",
+                "onActivityResult: authResponse Auth Code = ${authResponse?.authorizationCode} "
+            )
 
-        val interceptor = HttpLoggingInterceptor()
-        interceptor.level = HttpLoggingInterceptor.Level.BODY
-
-        val client = OkHttpClient.Builder().addInterceptor(interceptor)
-            .build()
-
-        val retro = Retrofit.Builder()
-            .baseUrl(url).client(client)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val apiServices = retro.create(APIServices::class.java)
-
-        apiServices.getAccessToken().enqueue(object : Callback<Any> {
-            override fun onResponse(call: Call<Any>, response: Response<Any>) {
-                Log.d("TAG", "onResponse: $response")
+            authResponse?.createTokenExchangeRequest()?.let {
+                authService.performTokenRequest(
+                    it
+                ) { response, ex ->
+                    Log.d("TAG", "on Token Exchange Response : ${response?.toString()}")
+                    Log.d("TAG", "on Token Exchange Response : ${response?.accessToken}")
+                    accessTokenForCalendarAPI = "Bearer ${response?.accessToken}"
+                    insertNewCalendarUsingApi( "CP Clinic Diary")
+                }
             }
-
-            override fun onFailure(call: Call<Any>, t: Throwable) {
-                Log.d("TAG", "onFailure: ${t.message}")
-            }
-
-        })
-
-
+        }
     }
 
-    private fun insertNewCalendarUsingApi() {
+    private fun insertNewCalendarUsingApi(newEventTitle: String) {
 
         RetrofitBuilder.focusApiServices.insertCalendarType(
-            InsertCalendarRequest("Clinic Diary"),
-            "AIzaSyCR0jAUvVLfbDot1hYCLTIJnupgdl78nJ4",
-            "Bearer ya29.a0ARrdaM9BZnf4RmPxyKEQ0_x92-rqLZYGLht5Qs0e73Xmf0zAb0_Ta9dpqEs7DhLTB5ZowCXHs6ua2d4ToQnV5u3soFY6SP0ucOxv6Suj9a828wHioFKUBbZyara06bNncHqcg3pl-W18L7Dcmr5VIt-Yrolg"
+            InsertCalendarRequest(newEventTitle),
+            apiKey,
+            accessTokenForCalendarAPI
         )
             .enqueue(object : Callback<InsertCalendarResponse> {
                 override fun onResponse(
@@ -133,7 +124,8 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
                     response: Response<InsertCalendarResponse>
                 ) {
                     Log.d("TAG", "onResponse: $response")
-                    Log.d("TAG", "onResponse - Body: ${response.body()}")
+                    calendarId = response.body()!!.id
+                    Toast.makeText(this@TheUltimateTry, "$newEventTitle added as new calendar type.", Toast.LENGTH_SHORT).show()
                 }
 
                 override fun onFailure(call: Call<InsertCalendarResponse>, t: Throwable) {
@@ -278,23 +270,4 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
         Log.d("TAG", "SYNCED EVENTS FROM CALENDAR : $events")
     }
 
-    private fun addNewCalendarType() {
-        val event = ContentValues()
-        event.put(CalendarContract.Calendars.NAME, "Vanilla")
-        event.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, "VanillaCal")
-        event.put(CalendarContract.Calendars.VISIBLE, 1)
-        event.put(CalendarContract.Calendars.SYNC_EVENTS, 1)
-
-        event.put(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
-        event.put(CalendarContract.Calendars.ACCOUNT_NAME, "spacestem3@gmail.com")
-        event.put(CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
-
-        val baseUri: Uri =
-            Uri.parse("content://com.android.calendar/calendars")
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            contentResolver.update(baseUri, event, null)
-        }
-
-    }
 }

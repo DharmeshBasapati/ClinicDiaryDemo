@@ -17,6 +17,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.app.clinicdiarydemo.databinding.AddEventBottomSheetBinding
+import com.app.clinicdiarydemo.network.builder.RetrofitBuilder
+import com.app.clinicdiarydemo.network.model.EventRequest
+import com.app.clinicdiarydemo.network.model.EventResponse
+import com.app.clinicdiarydemo.network.model.EventTime
+import com.app.clinicdiarydemo.ultimate.Constants.accessTokenForCalendarAPI
+import com.app.clinicdiarydemo.ultimate.Constants.calendarId
 import com.app.clinicdiarydemo.ultimate.Constants.dateAndTimeFormatForAddingEventToCalendar
 import com.app.clinicdiarydemo.ultimate.Constants.dateFormatToShowWhileAddingEvent
 import com.app.clinicdiarydemo.ultimate.Constants.eventsCalendarUri
@@ -28,6 +34,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -215,60 +224,7 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
 
             dismiss()
 
-            /*val calendar = Calendar.getInstance()
-            val day = calendar.get(Calendar.DATE)
-            val month = calendar.get(Calendar.MONTH)
-            val year = calendar.get(Calendar.YEAR)
-            val hours: Int = calendar.get(Calendar.HOUR_OF_DAY)
-            val minutes: Int = calendar.get(Calendar.MINUTE)
-            val startMillis: Long = calendar.run {
-                set(year, month, day, hours, minutes)
-                timeInMillis
-            }
-            val endMillis: Long = Calendar.getInstance().run {
-                set(year, month, day, hours, minutes + 60)
-                timeInMillis
-            }*/
-            val event = ContentValues()
-
-            event.put(CalendarContract.Events.CALENDAR_ID, 1)
-
-            event.put(CalendarContract.Events.DESCRIPTION, binding.edtDesc.text.toString())
-
-            event.put(CalendarContract.Events.EVENT_LOCATION, "Birmingham, UK")
-
-            event.put(
-                CalendarContract.Events.DTSTART,
-                MyUtils.getDateFromString(
-                    binding.tvStartDate.text.toString() + " " + binding.tvStartTime.text.toString(),
-                    dateAndTimeFormatForAddingEventToCalendar
-                ).time
-            )
-
-            event.put(
-                CalendarContract.Events.DTEND,
-                MyUtils.getDateFromString(
-                    binding.tvEndDate.text.toString() + " " + binding.tvEndTime.text.toString(),
-                    dateAndTimeFormatForAddingEventToCalendar
-                ).time
-            )
-
-            event.put(CalendarContract.Events.ALL_DAY, 0) // 0 for false, 1 for true
-
-            event.put(CalendarContract.Events.HAS_ALARM, 1) // 0 for false, 1 for true
-
-            val timeZone = TimeZone.getDefault().id
-            event.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone)
-
-            /*val rules = "RRULE:FREQ=WEEKLY;UNTIL=20141007T000000Z;WKST=SU;BYDAY=TU,TH"
-            event.put(CalendarContract.Events.RRULE, rules)*/
-
-            val baseUri: Uri =
-                Uri.parse(eventsCalendarUri)
-
-            requireActivity().contentResolver.insert(baseUri, event)
-
-            Toast.makeText(requireContext(), "Adding event to calendar.", Toast.LENGTH_SHORT).show()
+            addNewEventUsingCaledarApi()
 
         } else {
 
@@ -289,6 +245,113 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
         }
 
 
+    }
+
+    private fun addNewEventUsingCaledarApi() {
+        RetrofitBuilder.focusApiServices.insertNewEvent(
+            calendarId, accessTokenForCalendarAPI,
+            EventRequest(
+                summary = binding.edtTitle.text.toString(),
+                description = binding.edtDesc.text.toString(),
+                start = EventTime(
+                    dateTime = MyUtils.convertDateToString(
+                        MyUtils.getDateFromString(
+                            binding.tvStartDate.text.toString() + " " + binding.tvStartTime.text.toString(),
+                            dateAndTimeFormatForAddingEventToCalendar
+                        ), "yyyy-MM-dd'T'HH:mm:ss"
+                    ),//"2021-11-30T15:00:00"
+                    timeZone = "Asia/Kolkata",
+                ),
+                end = EventTime(
+                    dateTime = MyUtils.convertDateToString(
+                        MyUtils.getDateFromString(
+                            binding.tvEndDate.text.toString() + " " + binding.tvEndTime.text.toString(),
+                            dateAndTimeFormatForAddingEventToCalendar
+                        ), "yyyy-MM-dd'T'HH:mm:ss"
+                    ),
+                    timeZone = "Asia/Kolkata",
+                ),
+
+                )
+        ).enqueue(object : Callback<EventResponse> {
+            override fun onResponse(call: Call<EventResponse>, response: Response<EventResponse>) {
+                Log.d(
+                    "TAG",
+                    "onResponse: Event Added - ${response.body()}"
+                )
+            }
+
+            override fun onFailure(call: Call<EventResponse>, t: Throwable) {
+                Log.d(
+                    "TAG",
+                    "onFailure: Event can't be added - ${t.message.toString()}"
+                )
+            }
+
+
+        })
+    }
+
+    private fun addEventFromContentResolver() {
+        /*val calendar = Calendar.getInstance()
+            val day = calendar.get(Calendar.DATE)
+            val month = calendar.get(Calendar.MONTH)
+            val year = calendar.get(Calendar.YEAR)
+            val hours: Int = calendar.get(Calendar.HOUR_OF_DAY)
+            val minutes: Int = calendar.get(Calendar.MINUTE)
+            val startMillis: Long = calendar.run {
+                set(year, month, day, hours, minutes)
+                timeInMillis
+            }
+            val endMillis: Long = Calendar.getInstance().run {
+                set(year, month, day, hours, minutes + 60)
+                timeInMillis
+            }*/
+        val event = ContentValues()
+
+        event.put(CalendarContract.Events.CALENDAR_ID, 1)
+
+        event.put(
+            CalendarContract.Events._ID,
+            "ns0k2lb2l7d9a0800pva8gtqak@group.calendar.google.com"
+        )
+
+        event.put(CalendarContract.Events.DESCRIPTION, binding.edtDesc.text.toString())
+
+        event.put(CalendarContract.Events.EVENT_LOCATION, "Birmingham, UK")
+
+        event.put(
+            CalendarContract.Events.DTSTART,
+            MyUtils.getDateFromString(
+                binding.tvStartDate.text.toString() + " " + binding.tvStartTime.text.toString(),
+                dateAndTimeFormatForAddingEventToCalendar
+            ).time
+        )
+
+        event.put(
+            CalendarContract.Events.DTEND,
+            MyUtils.getDateFromString(
+                binding.tvEndDate.text.toString() + " " + binding.tvEndTime.text.toString(),
+                dateAndTimeFormatForAddingEventToCalendar
+            ).time
+        )
+
+        event.put(CalendarContract.Events.ALL_DAY, 0) // 0 for false, 1 for true
+
+        event.put(CalendarContract.Events.HAS_ALARM, 1) // 0 for false, 1 for true
+
+        val timeZone = TimeZone.getDefault().id
+        event.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone)
+
+        /*val rules = "RRULE:FREQ=WEEKLY;UNTIL=20141007T000000Z;WKST=SU;BYDAY=TU,TH"
+        event.put(CalendarContract.Events.RRULE, rules)*/
+
+        val baseUri: Uri =
+            Uri.parse(eventsCalendarUri)
+
+        requireActivity().contentResolver.insert(baseUri, event)
+
+        Toast.makeText(requireContext(), "Adding event to calendar.", Toast.LENGTH_SHORT).show()
     }
 
     private fun allDetailsAreValid(): Boolean {
