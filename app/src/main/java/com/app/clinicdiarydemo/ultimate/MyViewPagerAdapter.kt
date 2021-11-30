@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.app.clinicdiarydemo.R
 import com.app.clinicdiarydemo.databinding.RowItemViewPagerBinding
+import com.app.clinicdiarydemo.ultimate.Constants.dateAndDayFormatToShowInHeader
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 
@@ -78,7 +79,7 @@ class MyViewPagerAdapter(
         }
     }
 
-    private fun getDate(dateTime: DateTime) = dateTime.toString("dd\nE")
+    private fun getDate(dateTime: DateTime) = dateTime.toString(dateAndDayFormatToShowInHeader)
 
     override fun getItemCount() = daysList.size
 

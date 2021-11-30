@@ -1,6 +1,7 @@
 package com.app.clinicdiarydemo.network.builder
 
 import com.app.clinicdiarydemo.network.services.APIServices
+import com.app.clinicdiarydemo.network.services.RTApiServices
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -17,17 +18,7 @@ object RetrofitBuilder {
         interceptor.level = HttpLoggingInterceptor.Level.BODY
 
         val client = OkHttpClient.Builder().addInterceptor(interceptor)
-
-
             .build()
-
-//            .addInterceptor(Interceptor {
-//                var build = it.request().newBuilder().addHeader(
-//                    "Authorization",
-//                    "Bearer 388580567532-0n3p2lqmvsi3vb28mcdaa2idbc4fq36s.apps.googleusercontent.com"
-//                ).build()
-//                it.proceed(build)
-//            })
 
         return Retrofit.Builder()
             .baseUrl(BASE_URL).client(client)
@@ -35,6 +26,23 @@ object RetrofitBuilder {
             .build()
     }
 
+    private fun getRetrofitForRefreshToken(): Retrofit {
+
+        val interceptor = HttpLoggingInterceptor()
+        interceptor.level = HttpLoggingInterceptor.Level.BODY
+
+        val client = OkHttpClient.Builder().addInterceptor(interceptor)
+            .build()
+
+        return Retrofit.Builder()
+            .baseUrl("https://oauth2.googleapis.com/").client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+
     val focusApiServices: APIServices = getRetrofit().create(APIServices::class.java)
+
+    val refreshTokenApiServices: RTApiServices = getRetrofitForRefreshToken().create(RTApiServices::class.java)
 
 }

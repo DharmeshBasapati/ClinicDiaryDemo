@@ -2,6 +2,7 @@ package com.app.clinicdiarydemo.ultimate
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -25,6 +26,7 @@ import com.app.clinicdiarydemo.ultimate.Constants.accessTokenForCalendarAPI
 import com.app.clinicdiarydemo.ultimate.Constants.calendarId
 import com.app.clinicdiarydemo.ultimate.Constants.dateAndTimeFormatForAddingEventToCalendar
 import com.app.clinicdiarydemo.ultimate.Constants.dateFormatToShowWhileAddingEvent
+import com.app.clinicdiarydemo.ultimate.Constants.dateTimeFormatToAddAsEventInCalendar
 import com.app.clinicdiarydemo.ultimate.Constants.eventsCalendarUri
 import com.app.clinicdiarydemo.ultimate.Constants.timeFormatFromTimePicker
 import com.app.clinicdiarydemo.ultimate.Constants.timeFormatToShow
@@ -44,6 +46,13 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
 
     private lateinit var binding: AddEventBottomSheetBinding
     private lateinit var requestMultiplePermissions: ActivityResultLauncher<Array<String>>
+
+    private lateinit var loadingListener: LoadingListener
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        loadingListener = context as TheUltimateTry
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -220,11 +229,10 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
 
     private fun insertNewEventToCalendar() {
 
-        if (allDetailsAreValid()) {
+        if (areAllDetailsValid()) {
 
-            dismiss()
 
-            addNewEventUsingCaledarApi()
+            addNewEventUsingCalendarApi()
 
         } else {
 
@@ -244,12 +252,12 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
 
         }
 
-
     }
 
-    private fun addNewEventUsingCaledarApi() {
+    private fun addNewEventUsingCalendarApi() {
+        loadingListener.checkIfAPICalling(true)
         RetrofitBuilder.focusApiServices.insertNewEvent(
-            calendarId, accessTokenForCalendarAPI,
+            prefs.calendarID!!, prefs.accessToken!!,
             EventRequest(
                 summary = binding.edtTitle.text.toString(),
                 description = binding.edtDesc.text.toString(),
@@ -258,7 +266,7 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
                         MyUtils.getDateFromString(
                             binding.tvStartDate.text.toString() + " " + binding.tvStartTime.text.toString(),
                             dateAndTimeFormatForAddingEventToCalendar
-                        ), "yyyy-MM-dd'T'HH:mm:ss"
+                        ), dateTimeFormatToAddAsEventInCalendar
                     ),//"2021-11-30T15:00:00"
                     timeZone = "Asia/Kolkata",
                 ),
@@ -267,7 +275,7 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
                         MyUtils.getDateFromString(
                             binding.tvEndDate.text.toString() + " " + binding.tvEndTime.text.toString(),
                             dateAndTimeFormatForAddingEventToCalendar
-                        ), "yyyy-MM-dd'T'HH:mm:ss"
+                        ), dateTimeFormatToAddAsEventInCalendar
                     ),
                     timeZone = "Asia/Kolkata",
                 ),
@@ -275,17 +283,23 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
                 )
         ).enqueue(object : Callback<EventResponse> {
             override fun onResponse(call: Call<EventResponse>, response: Response<EventResponse>) {
+                loadingListener.checkIfAPICalling(false)
                 Log.d(
                     "TAG",
                     "onResponse: Event Added - ${response.body()}"
                 )
+                Toast.makeText(requireContext(), "Event Added Successfully.", Toast.LENGTH_SHORT)
+                    .show()
+                dismiss()
             }
 
             override fun onFailure(call: Call<EventResponse>, t: Throwable) {
+                loadingListener.checkIfAPICalling(false)
                 Log.d(
                     "TAG",
                     "onFailure: Event can't be added - ${t.message.toString()}"
                 )
+                Toast.makeText(requireContext(), "Event can't be added.", Toast.LENGTH_SHORT).show()
             }
 
 
@@ -354,7 +368,7 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
         Toast.makeText(requireContext(), "Adding event to calendar.", Toast.LENGTH_SHORT).show()
     }
 
-    private fun allDetailsAreValid(): Boolean {
+    private fun areAllDetailsValid(): Boolean {
 
         return when {
             binding.edtTitle.text.isEmpty() -> {

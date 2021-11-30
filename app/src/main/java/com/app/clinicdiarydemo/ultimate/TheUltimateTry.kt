@@ -8,6 +8,7 @@ import android.provider.CalendarContract.Events
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,11 +17,12 @@ import com.app.clinicdiarydemo.databinding.ActivityTheUltimateTryBinding
 import com.app.clinicdiarydemo.network.builder.RetrofitBuilder
 import com.app.clinicdiarydemo.network.model.InsertCalendarRequest
 import com.app.clinicdiarydemo.network.model.InsertCalendarResponse
+import com.app.clinicdiarydemo.network.model.RefreshTokenResponse
 import com.app.clinicdiarydemo.ultimate.Constants.accessTokenForCalendarAPI
 import com.app.clinicdiarydemo.ultimate.Constants.apiKey
 import com.app.clinicdiarydemo.ultimate.Constants.calendarId
 import com.app.clinicdiarydemo.ultimate.Constants.clientID
-import com.app.clinicdiarydemo.ultimate.Constants.dateAndTimeFormatForAddingEventToCalendar
+import com.app.clinicdiarydemo.ultimate.Constants.grantTypeForRefreshToken
 import com.app.clinicdiarydemo.ultimate.MyUtils.getDateNumber
 import com.app.clinicdiarydemo.ultimate.MyUtils.getMonth
 import net.openid.appauth.*
@@ -33,7 +35,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class TheUltimateTry : AppCompatActivity(), EventScrollListener {
+class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener {
 
     private lateinit var authService: AuthorizationService
     private lateinit var binding: ActivityTheUltimateTryBinding
@@ -49,15 +51,44 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
 
         supportActionBar?.title = getMonth(DateTime.now())
 
-        fetchAccessToken()
+        if (prefs.accessToken!!.isEmpty()) {
+            fetchAccessToken()
+        }
 
-        //insertNewCalendarUsingApi("Clinic Diary")
-
-        //addNewCalendarType()
+        //doRefreshToken()
 
         setDaysView(1)
 
-        //syncEventsFromCalendar()
+    }
+
+    private fun doRefreshToken() {
+        showProgress(true)
+        RetrofitBuilder.refreshTokenApiServices.refreshToken(
+            clientID,
+            prefs.refreshToken!!,
+            grantTypeForRefreshToken
+        ).enqueue(object : Callback<RefreshTokenResponse> {
+            override fun onResponse(
+                call: Call<RefreshTokenResponse>,
+                response: Response<RefreshTokenResponse>
+            ) {
+                showProgress(false)
+                Log.d(
+                    "TAG",
+                    "onResponse: doRefreshToken - New Access Token - ${response.body()?.access_token}"
+                )
+
+                prefs.accessToken = response.body()?.access_token
+            }
+
+            override fun onFailure(call: Call<RefreshTokenResponse>, t: Throwable) {
+                showProgress(false)
+                Log.d("TAG", "onFailure: doRefreshToken - ${t.message}")
+            }
+
+        })
+
+
     }
 
     private fun fetchAccessToken() {
@@ -71,7 +102,9 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
             serviceConfig,
             clientID,
             ResponseTypeValues.CODE,
-            Uri.parse("http://localhost/urn:ietf:wg:oauth:2.0:oob")
+            Uri.parse(
+                "http://localhost/urn:ietf:wg:oauth:2.0:oob"
+            )
         )
 
         authService = AuthorizationService(this)
@@ -85,7 +118,6 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
         startActivityForResult(authIntent, 111)
 
     }
-
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -103,36 +135,58 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
                     it
                 ) { response, ex ->
                     Log.d("TAG", "on Token Exchange Response : ${response?.toString()}")
-                    Log.d("TAG", "on Token Exchange Response : ${response?.accessToken}")
+                    Log.d("TAG", "Initial Access Token : ${response?.accessToken}")
                     accessTokenForCalendarAPI = "Bearer ${response?.accessToken}"
-                    insertNewCalendarUsingApi( "CP Clinic Diary")
+
+                    prefs.accessToken = "Bearer ${response?.accessToken}"
+                    prefs.refreshToken = response?.refreshToken
+
+                    if (prefs.calendarID!!.isEmpty()) {
+                        insertNewCalendarUsingApi("CP Clinic Diary")
+                    }
                 }
             }
         }
     }
 
     private fun insertNewCalendarUsingApi(newEventTitle: String) {
-
+        showProgress(true)
         RetrofitBuilder.focusApiServices.insertCalendarType(
             InsertCalendarRequest(newEventTitle),
             apiKey,
-            accessTokenForCalendarAPI
+            prefs.accessToken!!
         )
             .enqueue(object : Callback<InsertCalendarResponse> {
                 override fun onResponse(
                     call: Call<InsertCalendarResponse>,
                     response: Response<InsertCalendarResponse>
                 ) {
+                    showProgress(false)
                     Log.d("TAG", "onResponse: $response")
                     calendarId = response.body()!!.id
-                    Toast.makeText(this@TheUltimateTry, "$newEventTitle added as new calendar type.", Toast.LENGTH_SHORT).show()
+                    prefs.calendarID = response.body()!!.id
+                    Toast.makeText(
+                        this@TheUltimateTry,
+                        "$newEventTitle added as new calendar type.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
                 override fun onFailure(call: Call<InsertCalendarResponse>, t: Throwable) {
+                    showProgress(false)
                     Log.d("TAG", "onFailure: ${t.message}")
                 }
 
             })
+
+    }
+
+    private fun showProgress(needToShow: Boolean) {
+        if (needToShow) {
+            binding.lnrProgress.visibility = View.VISIBLE
+        } else {
+            binding.lnrProgress.visibility = View.GONE
+        }
 
     }
 
@@ -207,7 +261,6 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
         return true
     }
 
-
     private fun showAddEventSheet(selectedDate: String, selectedTimeSlot: String) {
 
         val addEventBottomSheet = AddEventBottomSheet()
@@ -219,55 +272,8 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener {
 
     }
 
-    private fun syncEventsFromCalendar() {
-        val projection = arrayOf(
-            Events._ID,
-            Events.TITLE,
-            Events.DESCRIPTION,
-            Events.DTSTART,
-            Events.DTEND,
-            Events.ALL_DAY,
-            Events.EVENT_LOCATION
-        )
-
-        val calendar = Calendar.getInstance()
-        val day = calendar.get(Calendar.DATE)
-        val month = calendar.get(Calendar.MONTH)
-        val year = calendar.get(Calendar.YEAR)
-        val hours: Int = calendar.get(Calendar.HOUR_OF_DAY)
-        val minutes: Int = calendar.get(Calendar.MINUTE)
-        val startMillis: Long = calendar.run {
-            set(year, month, day - 5, hours, minutes)
-            timeInMillis
-        }
-        val endMillis: Long = Calendar.getInstance().run {
-            set(year, month, day + 5, hours, minutes)
-            timeInMillis
-        }
-
-        val selection =
-            "(( " + Events.DTSTART + " >= " + startMillis + " ) AND ( " + Events.DTSTART + " <= " + endMillis + " ) AND ( deleted != 1 ))"
-
-        val cursor: Cursor? = contentResolver
-            .query(Events.CONTENT_URI, projection, selection, null, null)
-
-        if (cursor != null && cursor.count > 0 && cursor.moveToFirst()) {
-            do {
-                events.add(
-                    Events(
-                        cursor.getString(0),
-                        cursor.getString(1),
-                        cursor.getString(2),
-                        cursor.getString(3),
-                        cursor.getString(4),
-                        cursor.getString(5),
-                        cursor.getString(6)
-                    )
-                )
-            } while (cursor.moveToNext())
-            cursor.close()
-        }
-        Log.d("TAG", "SYNCED EVENTS FROM CALENDAR : $events")
+    override fun checkIfAPICalling(isLoading: Boolean) {
+        showProgress(isLoading)
     }
 
 }

@@ -8,9 +8,13 @@ object Constants {
 
     var calendarId = ""
 
-    const val clientID = "388580567532-0n3p2lqmvsi3vb28mcdaa2idbc4fq36s.apps.googleusercontent.com"
+    const val grantTypeForRefreshToken = "refresh_token"
 
-    const val webClientId = "388580567532-ddm371st8d198f2aem5bh3b3fta7so3g.apps.googleusercontent.com"
+    const val clientID = "388580567532-rh71aj345c01d9gld4ukeej00ar2hmve.apps.googleusercontent.com"
+
+    const val reverseClientIDForRedirectUri = "com.googleusercontent.apps.388580567532-0n3p2lqmvsi3vb28mcdaa2idbc4fq36s"
+
+    const val webClientId = "388580567532-p8vn1hovufbqnhtsgsisft2u9lg6sdem.apps.googleusercontent.com"
 
     const val eventsCalendarUri = "content://com.android.calendar/events"
 
@@ -29,4 +33,6 @@ object Constants {
     const val dateNumberFormat = "dd"
 
     const val dateAndTimeFormatForAddingEventToCalendar = "E, MMM dd, y hh:mm a"
+
+    const val dateTimeFormatToAddAsEventInCalendar = "yyyy-MM-dd'T'HH:mm:ss"
 }
