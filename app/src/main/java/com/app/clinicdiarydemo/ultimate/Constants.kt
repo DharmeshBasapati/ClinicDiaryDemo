@@ -18,7 +18,7 @@ object Constants {
 
     const val eventsCalendarUri = "content://com.android.calendar/events"
 
-    const val timeFormatToShow = "hh a"
+    const val timeFormatToShow = "hh:mm a"
 
     const val timeFormatToShowWhileAddingEvent = "hh:mm a"
 
@@ -31,6 +31,8 @@ object Constants {
     const val dateAndDayFormatToShowInHeader = "dd\nE"
 
     const val dateNumberFormat = "dd"
+
+    const val ddMMyyyy = "dd-MM-yyyy"
 
     const val dateAndTimeFormatForAddingEventToCalendar = "E, MMM dd, y hh:mm a"
 

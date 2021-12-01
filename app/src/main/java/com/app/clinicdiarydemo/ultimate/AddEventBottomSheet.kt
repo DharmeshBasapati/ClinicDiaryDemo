@@ -1,6 +1,7 @@
 package com.app.clinicdiarydemo.ultimate
 
 import android.Manifest
+import android.app.TimePickerDialog
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
@@ -12,6 +13,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TimePicker
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,8 +24,6 @@ import com.app.clinicdiarydemo.network.builder.RetrofitBuilder
 import com.app.clinicdiarydemo.network.model.EventRequest
 import com.app.clinicdiarydemo.network.model.EventResponse
 import com.app.clinicdiarydemo.network.model.EventTime
-import com.app.clinicdiarydemo.ultimate.Constants.accessTokenForCalendarAPI
-import com.app.clinicdiarydemo.ultimate.Constants.calendarId
 import com.app.clinicdiarydemo.ultimate.Constants.dateAndTimeFormatForAddingEventToCalendar
 import com.app.clinicdiarydemo.ultimate.Constants.dateFormatToShowWhileAddingEvent
 import com.app.clinicdiarydemo.ultimate.Constants.dateTimeFormatToAddAsEventInCalendar
@@ -36,14 +36,17 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import org.joda.time.DateTime
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.*
 
-class AddEventBottomSheet : BottomSheetDialogFragment() {
+class AddEventBottomSheet : BottomSheetDialogFragment(),
+    com.wdullaer.materialdatetimepicker.time.TimePickerDialog.OnTimeSetListener {
 
+    private var pickerTitle: String = ""
     private lateinit var binding: AddEventBottomSheetBinding
     private lateinit var requestMultiplePermissions: ActivityResultLauncher<Array<String>>
 
@@ -86,14 +89,14 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
     ): View {
         binding = AddEventBottomSheetBinding.inflate(layoutInflater)
 
-        val selectedDate = arguments?.get("IN_DATE")
+        val selectedDate: DateTime = DateTime.parse(arguments?.get("IN_DATE").toString())
         val selectedTime = arguments?.getString("IN_TIME")
 
         binding.apply {
 
-            tvStartDate.text = selectedDate.toString()
+            tvStartDate.text = MyUtils.getDate(selectedDate)
 
-            tvEndDate.text = selectedDate.toString()
+            tvEndDate.text = MyUtils.getDate(selectedDate)
 
             tvStartTime.text = MyUtils.convertDateToString(
                 MyUtils.getDateFromString(
@@ -121,8 +124,8 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
             }
 
             tvStartTime.setOnClickListener {
-                openTimePicker(
-                    "Start Time",
+                pickerTitle = "Start Time"
+                openMDPDialog(
                     Integer.parseInt(
                         tvStartTime.text.toString()
                             .substring(0, 2)
@@ -133,11 +136,23 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
                         )
                     )
                 )
+//                openTimePicker(
+//                    "Start Time",
+//                    Integer.parseInt(
+//                        tvStartTime.text.toString()
+//                            .substring(0, 2)
+//                    ),
+//                    Integer.parseInt(
+//                        tvStartTime.text.toString().substring(
+//                            3, 5
+//                        )
+//                    )
+//                )
             }
 
             tvEndTime.setOnClickListener {
-                openTimePicker(
-                    "End Time",
+                pickerTitle = "End Time"
+                openMDPDialog(
                     Integer.parseInt(
                         tvEndTime.text.toString()
                             .substring(0, 2)
@@ -186,7 +201,60 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+    private val timePickerListener: TimePickerDialog.OnTimeSetListener =
+        TimePickerDialog.OnTimeSetListener { view: TimePicker?, hourOfDay: Int, minute: Int ->
+            val formattedTime: String = when {
+                hourOfDay == 0 -> {
+                    if (minute < 10) {
+                        "${hourOfDay + 12}:0${minute} am"
+                    } else {
+                        "${hourOfDay + 12}:${minute} am"
+                    }
+                }
+                hourOfDay > 12 -> {
+                    if (minute < 10) {
+                        "${hourOfDay - 12}:0${minute} pm"
+                    } else {
+                        "${hourOfDay - 12}:${minute} pm"
+                    }
+                }
+                hourOfDay == 12 -> {
+                    if (minute < 10) {
+                        "${hourOfDay}:0${minute} pm"
+                    } else {
+                        "${hourOfDay}:${minute} pm"
+                    }
+                }
+                else -> {
+                    if (minute < 10) {
+                        "${hourOfDay}:${minute} am"
+                    } else {
+                        "${hourOfDay}:${minute} am"
+                    }
+                }
+            }
+            Log.d("TAG", "Formatted Time : $formattedTime")
+        }
+
+    private fun openOldTimePicker(hourToSet: Int, minuteToSet: Int) {
+
+        val timePicker =
+            TimePickerDialog(requireContext(), timePickerListener, hourToSet, minuteToSet, true)
+
+        timePicker.show()
+
+    }
+
+    private fun openMDPDialog(hourToSet: Int, minuteToSet: Int){
+
+        val timePicker = com.wdullaer.materialdatetimepicker.time.TimePickerDialog.newInstance(this,hourToSet,minuteToSet,false)
+        timePicker.setTimeInterval(1,15)
+        timePicker.show(requireActivity().supportFragmentManager,"MTP")
+
+    }
+
     private fun openTimePicker(pickerTitle: String, hourToSet: Int, minuteToSet: Int) {
+
         val picker =
             MaterialTimePicker.Builder()
                 .setTimeFormat(TimeFormat.CLOCK_12H)
@@ -416,6 +484,42 @@ class AddEventBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
+    }
+
+    override fun onTimeSet(
+        view: com.wdullaer.materialdatetimepicker.time.TimePickerDialog?,
+        hourOfDay: Int,
+        minute: Int,
+        second: Int
+    ) {
+        if (pickerTitle == "Start Time") {
+
+            binding.tvStartTime.text = MyUtils.convertDateToString(
+                MyUtils.getDateFromString(
+                    "${hourOfDay}:${minute}",
+                    timeFormatFromTimePicker
+                ), timeFormatToShowWhileAddingEvent
+            )
+
+            binding.tvEndTime.text = MyUtils.convertDateToString(
+                MyUtils.addHourToSelectedDate(
+                    MyUtils.getDateFromString(
+                        "${hourOfDay}:${minute}",
+                        timeFormatFromTimePicker
+                    )
+                ), timeFormatToShowWhileAddingEvent
+            )
+
+        } else {
+
+            binding.tvEndTime.text = MyUtils.convertDateToString(
+                MyUtils.getDateFromString(
+                    "${hourOfDay}:${minute}",
+                    timeFormatFromTimePicker
+                ), timeFormatToShowWhileAddingEvent
+            )
+
+        }
     }
 
 }

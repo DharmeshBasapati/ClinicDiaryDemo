@@ -2,6 +2,7 @@ package com.app.clinicdiarydemo.ultimate
 
 import android.graphics.Color
 import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -16,10 +17,9 @@ import org.joda.time.LocalDate
 
 class MyViewPagerAdapter(
     val listener: EventScrollListener,
-    private val daysList: List<List<String>>,
-    private val daysListForEvent: List<List<String>>,
+    private val daysList: List<List<DateTime>>,
     private val daysCount: Int,
-    val showAddEventSheet: (String,String) -> Unit
+    val showAddEventSheet: (DateTime,String) -> Unit
 
 ) : RecyclerView.Adapter<MyViewPagerAdapter.ViewHolder>() {
 
@@ -36,7 +36,7 @@ class MyViewPagerAdapter(
 
                 rvEvents.layoutManager = GridLayoutManager(itemView.context, daysList[position].size)
 
-                rvEvents.adapter = MyWeekViewAdapter(daysList[position],daysListForEvent[position], daysCount){s1,s2 -> showAddEventSheet(s1,s2)}
+                rvEvents.adapter = MyWeekViewAdapter(daysList[position], daysCount){s1,s2 -> showAddEventSheet(s1,s2)}
 
                 lnrDates.removeAllViews()
 
@@ -45,10 +45,10 @@ class MyViewPagerAdapter(
                     val inflater = LayoutInflater.from(itemView.context)
                         .inflate(R.layout.day_view_header, null, false)
                     (inflater as TextView).apply {
-                        text = element
+                        text = MyUtils.getDateToShowInHeader(element)
                         layoutParams =
                             LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1F)
-                        if (getDate(DateTime().withDate(LocalDate.now())) == element) {
+                        if (MyUtils.convertDateTimeToString(DateTime.now()) == MyUtils.convertDateTimeToString(element)) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                                 setTextColor(itemView.context.getColor(R.color.black))
                                 setBackgroundColor(itemView.context.getColor(R.color.teal_200))

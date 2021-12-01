@@ -8,12 +8,12 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
 import com.app.clinicdiarydemo.R
 import com.app.clinicdiarydemo.databinding.RowItemWeekGridBinding
+import org.joda.time.DateTime
 
 class MyWeekViewAdapter(
-    private var daysList: List<String>,
-    private var daysListForEvent: List<String>,
+    private var daysList: List<DateTime>,
     private val daysCount: Int,
-    val showAddEventSheet: (String, String) -> Unit
+    val showAddEventSheet: (DateTime, String) -> Unit
 ) :
     RecyclerView.Adapter<MyWeekViewAdapter.ViewHolder>() {
     inner class ViewHolder(var binding: RowItemWeekGridBinding) :
@@ -74,7 +74,7 @@ class MyWeekViewAdapter(
                     when (daysList.size) {
                         1 -> {
 
-                            Log.d("TAG", "onBindViewHolder: SELECTED DATE - ${daysListForEvent[0]}")
+                            Log.d("TAG", "onBindViewHolder: SELECTED DATE - ${daysList[0]}")
 
                             Log.d(
                                 "TAG",
@@ -84,7 +84,7 @@ class MyWeekViewAdapter(
                             )
 
                             showAddEventSheet(
-                                daysListForEvent[0],
+                                daysList[0],
                                 MyUtils.doSomethingFor1DayView(position)
                             )
                         }
@@ -93,7 +93,7 @@ class MyWeekViewAdapter(
                             Log.d(
                                 "TAG",
                                 "onBindViewHolder: SELECTED DATE - ${
-                                    daysListForEvent[MyUtils.getSelectedDateFromCellNumber(
+                                    daysList[MyUtils.getSelectedDateFromCellNumber(
                                         position + 1
                                     )]
                                 }"
@@ -107,7 +107,7 @@ class MyWeekViewAdapter(
                             )
 
                             showAddEventSheet(
-                                daysListForEvent[MyUtils.getSelectedDateFromCellNumber(
+                                daysList[MyUtils.getSelectedDateFromCellNumber(
                                     position + 1
                                 )], MyUtils.doSomethingFor3or7DaysView(position + 1)
                             )
@@ -119,7 +119,7 @@ class MyWeekViewAdapter(
         }
     }
 
-    override fun getItemCount() = 24 * daysCount
+    override fun getItemCount() = 48 * daysCount
 
 
 }

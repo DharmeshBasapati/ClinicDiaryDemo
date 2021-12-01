@@ -16,11 +16,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintTop_toTopOf="parent">
 
         <include
-            android:id="@+id/lnrEvent1"
             layout="@layout/row_item_events"
             android:layout_width="0dp"
             android:layout_height="60dp"
@@ -28,11 +27,18 @@
             android:visibility="visible" />
 
         <include
-            android:id="@+id/lnrEvent2"
             layout="@layout/row_item_events"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="3dp"
+            android:layout_weight="1"
+            android:visibility="visible" />
+
+        <include
+            layout="@layout/row_item_events"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="3dp"
             android:layout_weight="1"
             android:visibility="visible" />
     </LinearLayout>

@@ -3,6 +3,7 @@ package com.app.clinicdiarydemo.ultimate
 import com.app.clinicdiarydemo.ultimate.Constants.dateAndDayFormatToShowInHeader
 import com.app.clinicdiarydemo.ultimate.Constants.dateFormatToShowWhileAddingEvent
 import com.app.clinicdiarydemo.ultimate.Constants.dateNumberFormat
+import com.app.clinicdiarydemo.ultimate.Constants.ddMMyyyy
 import com.app.clinicdiarydemo.ultimate.Constants.monthYearFormatToShowOnToolbar
 import org.joda.time.DateTime
 import java.text.SimpleDateFormat
@@ -15,31 +16,55 @@ object MyUtils {
 
     private lateinit var myChunkedCellsList: List<List<Int>>
 
-    private val myTimeSlotsList = arrayListOf(
-        "12 AM",
-        "1 AM",
-        "2 AM",
-        "3 AM",
-        "4 AM",
-        "5 AM",
-        "6 AM",
-        "7 AM",
-        "8 AM",
-        "9 AM",
-        "10 AM",
-        "11 AM",
-        "12 PM",
-        "1 PM",
-        "2 PM",
-        "3 PM",
-        "4 PM",
-        "5 PM",
-        "6 PM",
-        "7 PM",
-        "8 PM",
-        "9 PM",
-        "10 PM",
-        "11 PM"
+    val myTimeSlotsList = arrayListOf(
+        "12:00 AM",
+        "12:30 AM",
+        "1:00 AM",
+        "1:30 AM",
+        "2:00 AM",
+        "2:30 AM",
+        "3:00 AM",
+        "3:30 AM",
+        "4:00 AM",
+        "4:30 AM",
+        "5:00 AM",
+        "5:30 AM",
+        "6:00 AM",
+        "6:30 AM",
+        "7:00 AM",
+        "7:30 AM",
+        "8:00 AM",
+        "8:30 AM",
+        "9:00 AM",
+        "9:30 AM",
+        "10:00 AM",
+        "10:30 AM",
+        "11:00 AM",
+        "11:30 AM",
+        "12:00 PM",
+        "12:30 PM",
+        "1:00 PM",
+        "1:30 PM",
+        "2:00 PM",
+        "2:30 PM",
+        "3:00 PM",
+        "3:30 PM",
+        "4:00 PM",
+        "4:30 PM",
+        "5:00 PM",
+        "5:30 PM",
+        "6:00 PM",
+        "6:30 PM",
+        "7:00 PM",
+        "7:30 PM",
+        "8:00 PM",
+        "8:30 PM",
+        "9:00 PM",
+        "9:30 PM",
+        "10:00 PM",
+        "10:30 PM",
+        "11:00 PM",
+        "11:30 PM"
     )
 
     fun doSomethingFor3or7DaysView(cellNumber: Int): String {
@@ -59,7 +84,7 @@ object MyUtils {
 
         val myList = arrayListOf<Int>()
 
-        (1..(24 * daysCount)).forEach { i ->
+        (1..(48 * daysCount)).forEach { i ->
             myList.add(i)
         }
 
@@ -99,7 +124,7 @@ object MyUtils {
 
         for (i in 1..daysCount) {
 
-            for (j in i..(24 * daysCount) step daysCount) {
+            for (j in i..(48 * daysCount) step daysCount) {
 
                 myRowOneList.add(j)
 
@@ -107,27 +132,43 @@ object MyUtils {
 
         }
 
-        myChunkedCellsList = myRowOneList.chunked(24)
+        myChunkedCellsList = myRowOneList.chunked(48)
     }
 
     private fun getChunkedCellsList(): List<List<Int>> = myChunkedCellsList
 
     fun getDateNumber(dateTime: DateTime) = Integer.parseInt(dateTime.toString(dateNumberFormat))
 
-    private fun getDate(dateTime: DateTime): String = dateTime.toString(dateFormatToShowWhileAddingEvent)
+     fun getDate(dateTime: DateTime): String =
+        dateTime.toString(dateFormatToShowWhileAddingEvent)
 
-    private fun getDateToShowInHeader(dateTime: DateTime): String = dateTime.toString(dateAndDayFormatToShowInHeader)
+    fun getDateToShowInHeader(dateTime: DateTime): String =
+        dateTime.toString(dateAndDayFormatToShowInHeader)
+
+    fun convertDateTimeToString(dateTime: DateTime): String = dateTime.toString(ddMMyyyy)
 
     fun getMonth(dateTime: DateTime): String = dateTime.toString(monthYearFormatToShowOnToolbar)
 
-    fun getDaysListToShowInHeader(): ArrayList<String> {
+    fun getDaysListToShowInHeader(): ArrayList<DateTime> {
 
-        val daysListToShowInHeader = ArrayList<String>()
+        val daysListToShowInHeader = ArrayList<DateTime>()
 
-        for (i in 1..DateTime().dayOfMonth().maximumValue) {
-            val formattedDate = getDateToShowInHeader(DateTime().withDayOfMonth(i))
-            daysListToShowInHeader.add(formattedDate)
+        for (i in 3 downTo 1) {
+            for (dayNumber in 0 until DateTime().minusMonths(i).dayOfMonth().maximumValue) {
+                daysListToShowInHeader.add(DateTime().minusMonths(i).plusDays(dayNumber))
+            }
         }
+
+        for (i in 0 until DateTime().dayOfMonth().maximumValue) {
+            daysListToShowInHeader.add(DateTime().plusDays(i))
+        }
+
+        for (i in 1..6) {
+            for (dayNumber in 0 until DateTime().plusMonths(i).dayOfMonth().maximumValue) {
+                daysListToShowInHeader.add(DateTime().plusMonths(i).plusDays(dayNumber))
+            }
+        }
+
         return daysListToShowInHeader
     }
 
@@ -135,10 +176,25 @@ object MyUtils {
 
         val daysListToUseInEvent = ArrayList<String>()
 
+        for (i in 3 downTo 1) {
+            for (dayNumber in 1..DateTime().minusMonths(i).dayOfMonth().maximumValue) {
+                val formattedDate = getDate(DateTime().minusMonths(i).withDayOfMonth(dayNumber))
+                daysListToUseInEvent.add(formattedDate)
+            }
+        }
+
         for (i in 1..DateTime().dayOfMonth().maximumValue) {
             val formattedDate = getDate(DateTime().withDayOfMonth(i))
             daysListToUseInEvent.add(formattedDate)
         }
+
+        for (i in 1..3) {
+            for (monthNum in 1..DateTime().plusMonths(i).dayOfMonth().maximumValue) {
+                val formattedDate = getDate(DateTime().plusMonths(i).withDayOfMonth(monthNum))
+                daysListToUseInEvent.add(formattedDate)
+            }
+        }
+
         return daysListToUseInEvent
     }
 
@@ -164,7 +220,7 @@ object MyUtils {
     }
 
     fun convertMillisToDateInString(milliSeconds: Long, dateFormat: String): String {
-        val formatter = SimpleDateFormat(dateFormat,Locale.getDefault())
+        val formatter = SimpleDateFormat(dateFormat, Locale.getDefault())
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = milliSeconds
         return formatter.format(calendar.time)
