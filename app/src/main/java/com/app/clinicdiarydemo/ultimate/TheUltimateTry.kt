@@ -14,13 +14,12 @@ import androidx.viewpager2.widget.ViewPager2
 import com.app.clinicdiarydemo.R
 import com.app.clinicdiarydemo.databinding.ActivityTheUltimateTryBinding
 import com.app.clinicdiarydemo.network.builder.RetrofitBuilder
-import com.app.clinicdiarydemo.network.model.InsertCalendarRequest
-import com.app.clinicdiarydemo.network.model.InsertCalendarResponse
-import com.app.clinicdiarydemo.network.model.RefreshTokenResponse
+import com.app.clinicdiarydemo.network.model.*
 import com.app.clinicdiarydemo.ultimate.Constants.accessTokenForCalendarAPI
 import com.app.clinicdiarydemo.ultimate.Constants.apiKey
 import com.app.clinicdiarydemo.ultimate.Constants.calendarId
 import com.app.clinicdiarydemo.ultimate.Constants.clientID
+import com.app.clinicdiarydemo.ultimate.Constants.ddMMyyyy
 import com.app.clinicdiarydemo.ultimate.Constants.grantTypeForRefreshToken
 import com.app.clinicdiarydemo.ultimate.MyUtils.getDaysListToShowInHeader
 import com.app.clinicdiarydemo.ultimate.MyUtils.getMonth
@@ -35,6 +34,7 @@ import kotlin.collections.ArrayList
 
 class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener {
 
+    private lateinit var eventsList: List<Item>
     private lateinit var authService: AuthorizationService
     private lateinit var binding: ActivityTheUltimateTryBinding
 
@@ -49,13 +49,29 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
         binding = ActivityTheUltimateTryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        supportActionBar?.title =
+            getMonth(DateTime.now())
+
         if (prefs.accessToken!!.isEmpty()) {
             fetchAccessToken()
+        } else if(prefs.calendarID!!.isNotEmpty()) {
+            fetchMyEvents()
         }
 
         //doRefreshToken()
 
-        setDaysView(currentDaysView)
+        val cellDate = MyUtils.convertDateTimeToString(
+            DateTime.parse("2021-12-03T14:28:23.193+05:30"),
+            "yyyy-MM-dd"
+        )
+        val cellTime = MyUtils.convertDateToString(
+            MyUtils.getDateFromString("03:30 PM", "hh:mm a"),
+            "HH:mm:ss"
+        )
+        val resultedCellDateTime: DateTime =
+            MyUtils.convertStringToDateTime("${cellDate}T$cellTime")
+
+        Log.d("TAG", "resultedCellDateTime: $resultedCellDateTime")
 
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
 
@@ -101,6 +117,44 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
 
     }
 
+    private fun fetchMyEvents() {
+
+        Log.d("TAG", "fetchMyEvents: Called")
+
+        showProgress(true)
+        RetrofitBuilder.focusApiServices.listEvents(
+            prefs.calendarID!!, prefs.accessToken!!,
+        ).enqueue(object : Callback<ListEventsResponse> {
+            override fun onResponse(
+                call: Call<ListEventsResponse>,
+                response: Response<ListEventsResponse>
+            ) {
+                showProgress(false)
+                Log.d(
+                    "TAG",
+                    "onResponse: Events Listed Successfully - ${response.body()}"
+                )
+
+                eventsList = response.body()?.items ?: arrayListOf()
+
+                setDaysView(currentDaysView)
+
+            }
+
+            override fun onFailure(call: Call<ListEventsResponse>, t: Throwable) {
+                showProgress(false)
+                Log.d(
+                    "TAG",
+                    "onFailure: Events list API - ${t.message.toString()}"
+                )
+
+            }
+
+
+        })
+
+    }
+
     private fun doRefreshToken() {
         showProgress(true)
         RetrofitBuilder.refreshTokenApiServices.refreshToken(
@@ -132,6 +186,8 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
     }
 
     private fun fetchAccessToken() {
+
+        Log.d("TAG", "fetchAccessToken: Called")
 
         val serviceConfig = AuthorizationServiceConfiguration(
             Uri.parse("https://accounts.google.com/o/oauth2/auth"),
@@ -182,6 +238,8 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
 
                     if (prefs.calendarID!!.isEmpty()) {
                         insertNewCalendarUsingApi("Center Fresh")
+                    }else{
+                        fetchMyEvents()
                     }
                 }
             }
@@ -189,6 +247,9 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
     }
 
     private fun insertNewCalendarUsingApi(newEventTitle: String) {
+
+        Log.d("TAG", "insertNewCalendarUsingApi: Called")
+
         showProgress(true)
         RetrofitBuilder.focusApiServices.insertCalendarType(
             InsertCalendarRequest(newEventTitle),
@@ -209,6 +270,7 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
                         "$newEventTitle added as new calendar type.",
                         Toast.LENGTH_SHORT
                     ).show()
+                    fetchMyEvents()
                 }
 
                 override fun onFailure(call: Call<InsertCalendarResponse>, t: Throwable) {
@@ -239,7 +301,8 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
             MyViewPagerAdapter(
                 this@TheUltimateTry,
                 getDaysListToShowInHeader().chunked(daysCount),
-                daysCount
+                daysCount,
+                eventsList
             ) { selectedDate, selectedTimeSlot ->
                 showAddEventSheet(selectedDate, selectedTimeSlot)
             }
@@ -253,8 +316,11 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
         updatedChunkedList.forEachIndexed { mainIndex, list ->
 
             list.forEachIndexed { _, dateTime ->
-                if (MyUtils.convertDateTimeToString(dateTime) == MyUtils.convertDateTimeToString(
-                        DateTime.now()
+                if (MyUtils.convertDateTimeToString(
+                        dateTime,
+                        ddMMyyyy
+                    ) == MyUtils.convertDateTimeToString(
+                        DateTime.now(), ddMMyyyy
                     )
                 ) {
                     binding.viewPager.setCurrentItem(mainIndex, true)

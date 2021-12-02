@@ -16,21 +16,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ClinicDiaryDemo">
-        <activity
-            android:name=".kizitone.MyCalendarViewActivity"
-            android:exported="false" />
+
         <activity
             android:name=".ultimate.TheUltimateTry"
             android:exported="true">
-            <tools:validation testUrl="https://www.spacestem.com/" />
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
-
             </intent-filter>
-
         </activity>
 
         <activity
@@ -44,26 +37,16 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="http"
                     android:host="localhost"
-                    android:path="/urn:ietf:wg:oauth:2.0:oob" />
+                    android:path="/urn:ietf:wg:oauth:2.0:oob"
+                    android:scheme="http" />
             </intent-filter>
         </activity>
 
         <activity
             android:name=".facecheck.FaceCheckActivity"
             android:exported="false" />
-        <activity
-            android:name=".others.SimpleActivity"
-            android:exported="true" />
-        <activity
-            android:name=".others.MainActivity"
-            android:exported="true" />
-        <activity
-            android:name=".others.ThirdTry"
-            android:exported="true">
 
-        </activity>
     </application>
 
 </manifest>

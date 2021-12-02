@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.app.clinicdiarydemo.R
 import com.app.clinicdiarydemo.databinding.RowItemViewPagerBinding
+import com.app.clinicdiarydemo.network.model.Item
 import com.app.clinicdiarydemo.ultimate.Constants.dateAndDayFormatToShowInHeader
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
@@ -19,6 +20,7 @@ class MyViewPagerAdapter(
     val listener: EventScrollListener,
     private val daysList: List<List<DateTime>>,
     private val daysCount: Int,
+    private val eventsList: List<Item>,
     val showAddEventSheet: (DateTime,String) -> Unit
 
 ) : RecyclerView.Adapter<MyViewPagerAdapter.ViewHolder>() {
@@ -36,7 +38,7 @@ class MyViewPagerAdapter(
 
                 rvEvents.layoutManager = GridLayoutManager(itemView.context, daysList[position].size)
 
-                rvEvents.adapter = MyWeekViewAdapter(daysList[position], daysCount){s1,s2 -> showAddEventSheet(s1,s2)}
+                rvEvents.adapter = MyWeekViewAdapter(eventsList,daysList[position], daysCount){s1,s2 -> showAddEventSheet(s1,s2)}
 
                 lnrDates.removeAllViews()
 
@@ -48,7 +50,9 @@ class MyViewPagerAdapter(
                         text = MyUtils.getDateToShowInHeader(element)
                         layoutParams =
                             LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1F)
-                        if (MyUtils.convertDateTimeToString(DateTime.now()) == MyUtils.convertDateTimeToString(element)) {
+                        if (MyUtils.convertDateTimeToString(DateTime.now(), Constants.ddMMyyyy) == MyUtils.convertDateTimeToString(element,
+                                Constants.ddMMyyyy
+                            )) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                                 setTextColor(itemView.context.getColor(R.color.black))
                                 setBackgroundColor(itemView.context.getColor(R.color.teal_200))

@@ -8,9 +8,11 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
 import com.app.clinicdiarydemo.R
 import com.app.clinicdiarydemo.databinding.RowItemWeekGridBinding
+import com.app.clinicdiarydemo.network.model.Item
 import org.joda.time.DateTime
 
 class MyWeekViewAdapter(
+    private val eventsList: List<Item>,
     private var daysList: List<DateTime>,
     private val daysCount: Int,
     val showAddEventSheet: (DateTime, String) -> Unit
@@ -42,6 +44,8 @@ class MyWeekViewAdapter(
                         } else {
                             lnrDayEvents.visibility = View.GONE
                         }
+
+
                     }
                     3 -> {
                         lnrDayEvents.visibility = View.GONE

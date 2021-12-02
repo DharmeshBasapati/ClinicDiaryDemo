@@ -145,7 +145,11 @@ object MyUtils {
     fun getDateToShowInHeader(dateTime: DateTime): String =
         dateTime.toString(dateAndDayFormatToShowInHeader)
 
-    fun convertDateTimeToString(dateTime: DateTime): String = dateTime.toString(ddMMyyyy)
+    fun convertDateTimeToString(dateTime: DateTime,newDateFormat: String): String = dateTime.toString(newDateFormat)
+
+    fun convertStringToDateTime(dateTimeInString: String): DateTime{
+        return DateTime.parse(dateTimeInString)
+    }
 
     fun getMonth(dateTime: DateTime): String = dateTime.toString(monthYearFormatToShowOnToolbar)
 

@@ -1,11 +1,7 @@
 package com.app.clinicdiarydemo.network.services
 
-import com.app.clinicdiarydemo.network.model.EventRequest
-import com.app.clinicdiarydemo.network.model.EventResponse
-import com.app.clinicdiarydemo.network.model.InsertCalendarRequest
-import com.app.clinicdiarydemo.network.model.InsertCalendarResponse
+import com.app.clinicdiarydemo.network.model.*
 import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.http.*
 
 interface APIServices {
@@ -24,6 +20,10 @@ interface APIServices {
         @Body eventRequest: EventRequest
     ): Call<EventResponse>
 
-
+    @GET("calendars/{calendarId}/events")
+    fun listEvents(
+        @Path("calendarId") calendarId: String,
+        @Header("Authorization") accessToken: String,
+    ): Call<ListEventsResponse>
 
 }
