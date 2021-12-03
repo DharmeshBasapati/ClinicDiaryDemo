@@ -2,11 +2,11 @@ package com.app.clinicdiarydemo.ultimate
 
 import android.graphics.Color
 import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.app.clinicdiarydemo.R
@@ -14,7 +14,6 @@ import com.app.clinicdiarydemo.databinding.RowItemViewPagerBinding
 import com.app.clinicdiarydemo.network.model.Item
 import com.app.clinicdiarydemo.ultimate.Constants.dateAndDayFormatToShowInHeader
 import org.joda.time.DateTime
-import org.joda.time.LocalDate
 
 class MyViewPagerAdapter(
     val listener: EventScrollListener,
@@ -45,26 +44,52 @@ class MyViewPagerAdapter(
                 for (element in daysList[position]) {
 
                     val inflater = LayoutInflater.from(itemView.context)
-                        .inflate(R.layout.day_view_header, null, false)
-                    (inflater as TextView).apply {
-                        text = MyUtils.getDateToShowInHeader(element)
+                        .inflate(R.layout.new_day_view_header, null, false)
+
+                    val lnrDayDateRoot = inflater.findViewById<LinearLayout>(R.id.lnrDayDateRoot)
+                    val tvDay = inflater.findViewById<TextView>(R.id.tvDay)
+                    val tvDate = inflater.findViewById<TextView>(R.id.tvDate)
+
+                    tvDay.text = CalendarUtils.convertDateTimeToString(element,"E")
+                    tvDate.text = CalendarUtils.convertDateTimeToString(element,"dd")
+
+                    lnrDayDateRoot.layoutParams =
+                        LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1F)
+
+                    if (CalendarUtils.convertDateTimeToString(DateTime.now(), Constants.ddMMyyyy) == CalendarUtils.convertDateTimeToString(element,
+                            Constants.ddMMyyyy
+                        )) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            tvDate.setTextColor(itemView.context.getColor(R.color.white))
+                            tvDate.background = AppCompatResources.getDrawable(itemView.context,R.drawable.today_circle_drawable)
+                        }
+                    } else {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            tvDate.setTextColor(itemView.context.getColor(R.color.mild_black))
+                            tvDate.setBackgroundColor(Color.TRANSPARENT)
+                        }
+                    }
+                    lnrDates.addView(lnrDayDateRoot)
+
+                    /*(inflater as TextView).apply {
+                        text = CalendarUtils.getDateToShowInHeader(element)
                         layoutParams =
                             LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1F)
-                        if (MyUtils.convertDateTimeToString(DateTime.now(), Constants.ddMMyyyy) == MyUtils.convertDateTimeToString(element,
+                        if (CalendarUtils.convertDateTimeToString(DateTime.now(), Constants.ddMMyyyy) == CalendarUtils.convertDateTimeToString(element,
                                 Constants.ddMMyyyy
                             )) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                setTextColor(itemView.context.getColor(R.color.black))
-                                setBackgroundColor(itemView.context.getColor(R.color.teal_200))
+                                setTextColor(itemView.context.getColor(R.color.white))
+                                setBackgroundColor(itemView.context.getColor(R.color.today_color))
                             }
                         } else {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                setTextColor(itemView.context.getColor(R.color.white))
+                                setTextColor(itemView.context.getColor(R.color.mild_black))
                                 setBackgroundColor(Color.TRANSPARENT)
                             }
                         }
                         lnrDates.addView(this)
-                    }
+                    }*/
 
                 }
 

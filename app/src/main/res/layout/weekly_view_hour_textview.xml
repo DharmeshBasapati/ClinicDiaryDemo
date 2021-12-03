@@ -5,6 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="60dp"
     android:gravity="top|center_horizontal"
-    tools:text="1 AM"
-    android:textColor="@color/black"
+    tools:text="01:30 AM"
+    android:textColor="@color/divider_grey"
     android:textSize="11sp" />

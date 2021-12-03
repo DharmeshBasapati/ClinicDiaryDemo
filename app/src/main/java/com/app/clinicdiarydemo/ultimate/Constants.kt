@@ -8,13 +8,11 @@ object Constants {
 
     var calendarId = ""
 
+    const val timeSlotRowCount = 48
+
     const val grantTypeForRefreshToken = "refresh_token"
 
     const val clientID = "388580567532-rh71aj345c01d9gld4ukeej00ar2hmve.apps.googleusercontent.com"
-
-    const val reverseClientIDForRedirectUri = "com.googleusercontent.apps.388580567532-0n3p2lqmvsi3vb28mcdaa2idbc4fq36s"
-
-    const val webClientId = "388580567532-p8vn1hovufbqnhtsgsisft2u9lg6sdem.apps.googleusercontent.com"
 
     const val eventsCalendarUri = "content://com.android.calendar/events"
 
@@ -28,9 +26,7 @@ object Constants {
 
     const val monthYearFormatToShowOnToolbar = "MMMM YYYY"
 
-    const val dateAndDayFormatToShowInHeader = "dd\nE"
-
-    const val dateNumberFormat = "dd"
+    const val dateAndDayFormatToShowInHeader = "E\ndd"
 
     const val ddMMyyyy = "dd-MM-yyyy"
 

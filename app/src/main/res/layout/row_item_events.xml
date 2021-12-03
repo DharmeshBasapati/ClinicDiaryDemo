@@ -2,20 +2,21 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:padding="2dp"
+    android:padding="5dp"
     android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/tvActualEvent1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/purple_200"
+        android:background="#daf6f4"
         android:gravity="center"
         android:padding="5dp"
         android:textSize="11sp"
-        android:text="Patient: Sarah Parker\nTreatment: Botox Treatment\nPractitioner: Rahul Dravid"
-        android:textColor="@color/black"
+        android:text="Sarah Parker\nBotox Treatment"
+        android:textColor="#1c1d1d"
         android:visibility="visible"
+        android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

@@ -2,65 +2,64 @@ package com.app.clinicdiarydemo.ultimate
 
 import com.app.clinicdiarydemo.ultimate.Constants.dateAndDayFormatToShowInHeader
 import com.app.clinicdiarydemo.ultimate.Constants.dateFormatToShowWhileAddingEvent
-import com.app.clinicdiarydemo.ultimate.Constants.dateNumberFormat
-import com.app.clinicdiarydemo.ultimate.Constants.ddMMyyyy
 import com.app.clinicdiarydemo.ultimate.Constants.monthYearFormatToShowOnToolbar
+import com.app.clinicdiarydemo.ultimate.Constants.timeSlotRowCount
 import org.joda.time.DateTime
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-object MyUtils {
+object CalendarUtils {
 
     private lateinit var timeSlotSelectionList: List<List<Int>>
 
     private lateinit var myChunkedCellsList: List<List<Int>>
 
     val myTimeSlotsList = arrayListOf(
-        "12:00 AM",
-        "12:30 AM",
-        "1:00 AM",
-        "1:30 AM",
-        "2:00 AM",
-        "2:30 AM",
-        "3:00 AM",
-        "3:30 AM",
-        "4:00 AM",
-        "4:30 AM",
-        "5:00 AM",
-        "5:30 AM",
-        "6:00 AM",
-        "6:30 AM",
-        "7:00 AM",
-        "7:30 AM",
-        "8:00 AM",
-        "8:30 AM",
-        "9:00 AM",
-        "9:30 AM",
+        "00:00 AM",
+        "00:30 AM",
+        "01:00 AM",
+        "01:30 AM",
+        "02:00 AM",
+        "02:30 AM",
+        "03:00 AM",
+        "03:30 AM",
+        "04:00 AM",
+        "04:30 AM",
+        "05:00 AM",
+        "05:30 AM",
+        "06:00 AM",
+        "06:30 AM",
+        "07:00 AM",
+        "07:30 AM",
+        "08:00 AM",
+        "08:30 AM",
+        "09:00 AM",
+        "09:30 AM",
         "10:00 AM",
         "10:30 AM",
         "11:00 AM",
         "11:30 AM",
         "12:00 PM",
         "12:30 PM",
-        "1:00 PM",
-        "1:30 PM",
-        "2:00 PM",
-        "2:30 PM",
-        "3:00 PM",
-        "3:30 PM",
-        "4:00 PM",
-        "4:30 PM",
-        "5:00 PM",
-        "5:30 PM",
-        "6:00 PM",
-        "6:30 PM",
-        "7:00 PM",
-        "7:30 PM",
-        "8:00 PM",
-        "8:30 PM",
-        "9:00 PM",
-        "9:30 PM",
+        "01:00 PM",
+        "01:30 PM",
+        "02:00 PM",
+        "02:30 PM",
+        "03:00 PM",
+        "03:30 PM",
+        "04:00 PM",
+        "04:30 PM",
+        "05:00 PM",
+        "05:30 PM",
+        "06:00 PM",
+        "06:30 PM",
+        "07:00 PM",
+        "07:30 PM",
+        "08:00 PM",
+        "08:30 PM",
+        "09:00 PM",
+        "09:30 PM",
         "10:00 PM",
         "10:30 PM",
         "11:00 PM",
@@ -84,7 +83,7 @@ object MyUtils {
 
         val myList = arrayListOf<Int>()
 
-        (1..(48 * daysCount)).forEach { i ->
+        (1..(timeSlotRowCount * daysCount)).forEach { i ->
             myList.add(i)
         }
 
@@ -124,7 +123,7 @@ object MyUtils {
 
         for (i in 1..daysCount) {
 
-            for (j in i..(48 * daysCount) step daysCount) {
+            for (j in i..(timeSlotRowCount * daysCount) step daysCount) {
 
                 myRowOneList.add(j)
 
@@ -132,22 +131,21 @@ object MyUtils {
 
         }
 
-        myChunkedCellsList = myRowOneList.chunked(48)
+        myChunkedCellsList = myRowOneList.chunked(timeSlotRowCount)
     }
 
     private fun getChunkedCellsList(): List<List<Int>> = myChunkedCellsList
 
-    fun getDateNumber(dateTime: DateTime) = Integer.parseInt(dateTime.toString(dateNumberFormat))
-
-     fun getDate(dateTime: DateTime): String =
+    fun getDate(dateTime: DateTime): String =
         dateTime.toString(dateFormatToShowWhileAddingEvent)
 
     fun getDateToShowInHeader(dateTime: DateTime): String =
         dateTime.toString(dateAndDayFormatToShowInHeader)
 
-    fun convertDateTimeToString(dateTime: DateTime,newDateFormat: String): String = dateTime.toString(newDateFormat)
+    fun convertDateTimeToString(dateTime: DateTime, newDateFormat: String): String =
+        dateTime.toLocalDateTime().toString(newDateFormat)
 
-    fun convertStringToDateTime(dateTimeInString: String): DateTime{
+    fun convertStringToDateTime(dateTimeInString: String): DateTime {
         return DateTime.parse(dateTimeInString)
     }
 
@@ -176,32 +174,6 @@ object MyUtils {
         return daysListToShowInHeader
     }
 
-    fun getDaysListToUseInEvent(): ArrayList<String> {
-
-        val daysListToUseInEvent = ArrayList<String>()
-
-        for (i in 3 downTo 1) {
-            for (dayNumber in 1..DateTime().minusMonths(i).dayOfMonth().maximumValue) {
-                val formattedDate = getDate(DateTime().minusMonths(i).withDayOfMonth(dayNumber))
-                daysListToUseInEvent.add(formattedDate)
-            }
-        }
-
-        for (i in 1..DateTime().dayOfMonth().maximumValue) {
-            val formattedDate = getDate(DateTime().withDayOfMonth(i))
-            daysListToUseInEvent.add(formattedDate)
-        }
-
-        for (i in 1..3) {
-            for (monthNum in 1..DateTime().plusMonths(i).dayOfMonth().maximumValue) {
-                val formattedDate = getDate(DateTime().plusMonths(i).withDayOfMonth(monthNum))
-                daysListToUseInEvent.add(formattedDate)
-            }
-        }
-
-        return daysListToUseInEvent
-    }
-
     fun getDateFromString(date: String, dateFormat: String): Date {
         val sdf = SimpleDateFormat(dateFormat, Locale.getDefault())
         return sdf.parse(date)
@@ -223,7 +195,7 @@ object MyUtils {
         return dateFormatter.format(date)
     }
 
-    fun convertMillisToDateInString(milliSeconds: Long, dateFormat: String): String {
+    fun convertMillisToString(milliSeconds: Long, dateFormat: String): String {
         val formatter = SimpleDateFormat(dateFormat, Locale.getDefault())
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = milliSeconds

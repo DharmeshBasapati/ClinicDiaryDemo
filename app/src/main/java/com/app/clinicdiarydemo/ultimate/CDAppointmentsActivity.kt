@@ -21,8 +21,8 @@ import com.app.clinicdiarydemo.ultimate.Constants.calendarId
 import com.app.clinicdiarydemo.ultimate.Constants.clientID
 import com.app.clinicdiarydemo.ultimate.Constants.ddMMyyyy
 import com.app.clinicdiarydemo.ultimate.Constants.grantTypeForRefreshToken
-import com.app.clinicdiarydemo.ultimate.MyUtils.getDaysListToShowInHeader
-import com.app.clinicdiarydemo.ultimate.MyUtils.getMonth
+import com.app.clinicdiarydemo.ultimate.CalendarUtils.getDaysListToShowInHeader
+import com.app.clinicdiarydemo.ultimate.CalendarUtils.getMonth
 import net.openid.appauth.*
 import org.joda.time.DateTime
 import retrofit2.Call
@@ -32,17 +32,17 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener {
+class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, LoadingListener {
 
     private lateinit var eventsList: List<Item>
-    private lateinit var authService: AuthorizationService
-    private lateinit var binding: ActivityTheUltimateTryBinding
 
-    private val events: ArrayList<com.app.clinicdiarydemo.ultimate.Events> = ArrayList()
+    private lateinit var authService: AuthorizationService
+
+    private lateinit var binding: ActivityTheUltimateTryBinding
 
     private var isDayViewSelected: Boolean = false
 
-    private var currentDaysView = 3
+    private var currentDaysView = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,16 +60,16 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
 
         //doRefreshToken()
 
-        val cellDate = MyUtils.convertDateTimeToString(
+        val cellDate = CalendarUtils.convertDateTimeToString(
             DateTime.parse("2021-12-03T14:28:23.193+05:30"),
             "yyyy-MM-dd"
         )
-        val cellTime = MyUtils.convertDateToString(
-            MyUtils.getDateFromString("03:30 PM", "hh:mm a"),
+        val cellTime = CalendarUtils.convertDateToString(
+            CalendarUtils.getDateFromString("03:30 PM", "hh:mm a"),
             "HH:mm:ss"
         )
         val resultedCellDateTime: DateTime =
-            MyUtils.convertStringToDateTime("${cellDate}T$cellTime")
+            CalendarUtils.convertStringToDateTime("${cellDate}T${cellTime}Z")
 
         Log.d("TAG", "resultedCellDateTime: $resultedCellDateTime")
 
@@ -266,7 +266,7 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
                     calendarId = response.body()!!.id
                     prefs.calendarID = response.body()!!.id
                     Toast.makeText(
-                        this@TheUltimateTry,
+                        this@CDAppointmentsActivity,
                         "$newEventTitle added as new calendar type.",
                         Toast.LENGTH_SHORT
                     ).show()
@@ -293,13 +293,13 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
 
     private fun setDaysView(daysCount: Int) {
 
-        MyUtils.setDaysListAccordingToViews(daysCount)
+        CalendarUtils.setDaysListAccordingToViews(daysCount)
 
-        MyUtils.setTimeSlotsSelectionList(daysCount)
+        CalendarUtils.setTimeSlotsSelectionList(daysCount)
 
         binding.viewPager.adapter =
             MyViewPagerAdapter(
-                this@TheUltimateTry,
+                this@CDAppointmentsActivity,
                 getDaysListToShowInHeader().chunked(daysCount),
                 daysCount,
                 eventsList
@@ -307,19 +307,19 @@ class TheUltimateTry : AppCompatActivity(), EventScrollListener, LoadingListener
                 showAddEventSheet(selectedDate, selectedTimeSlot)
             }
 
-        binding.rvHours.layoutManager = LinearLayoutManager(this@TheUltimateTry)
+        binding.rvHours.layoutManager = LinearLayoutManager(this@CDAppointmentsActivity)
 
-        binding.rvHours.adapter = MyHoursListAdapter(MyUtils.myTimeSlotsList)
+        binding.rvHours.adapter = MyHoursListAdapter(CalendarUtils.myTimeSlotsList)
 
         val updatedChunkedList = getDaysListToShowInHeader().chunked(daysCount)
 
         updatedChunkedList.forEachIndexed { mainIndex, list ->
 
             list.forEachIndexed { _, dateTime ->
-                if (MyUtils.convertDateTimeToString(
+                if (CalendarUtils.convertDateTimeToString(
                         dateTime,
                         ddMMyyyy
-                    ) == MyUtils.convertDateTimeToString(
+                    ) == CalendarUtils.convertDateTimeToString(
                         DateTime.now(), ddMMyyyy
                     )
                 ) {

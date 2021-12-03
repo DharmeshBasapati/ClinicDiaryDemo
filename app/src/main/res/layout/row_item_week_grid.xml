@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent">
 
         <include
@@ -30,7 +30,6 @@
             layout="@layout/row_item_events"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:layout_marginStart="3dp"
             android:layout_weight="1"
             android:visibility="visible" />
 
@@ -38,7 +37,6 @@
             layout="@layout/row_item_events"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:layout_marginStart="3dp"
             android:layout_weight="1"
             android:visibility="visible" />
     </LinearLayout>
@@ -52,17 +50,10 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <include
-            android:id="@+id/lnrEvent3"
-            layout="@layout/row_item_event_dots"
-            android:layout_width="wrap_content"
+            layout="@layout/row_item_events"
+            android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:visibility="visible" />
-
-        <include
-            android:id="@+id/lnrEvent4"
-            layout="@layout/row_item_event_dots"
-            android:layout_width="wrap_content"
-            android:layout_height="60dp"
+            android:layout_marginStart="3dp"
             android:visibility="visible" />
 
 
@@ -77,16 +68,20 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <include
-            android:id="@+id/lnrEvent31"
             layout="@layout/row_item_event_dots"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="visible" />
 
         <include
-            android:id="@+id/lnrEvent41"
             layout="@layout/row_item_event_dots"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="visible" />
+
+        <include
+            layout="@layout/row_item_event_dots"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="visible" />
 

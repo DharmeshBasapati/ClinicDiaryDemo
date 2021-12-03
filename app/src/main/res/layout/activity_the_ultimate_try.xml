@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/purple_500"
-    tools:context=".ultimate.TheUltimateTry">
+    android:background="@color/white"
+    tools:context=".ultimate.CDAppointmentsActivity">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvHours"
         android:layout_width="40dp"
         android:layout_height="match_parent"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="80dp"
         android:background="@color/white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -24,14 +24,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/rvHours" />
 
-
     <LinearLayout
         android:id="@+id/lnrProgress"
         android:layout_width="match_parent"
-        android:visibility="gone"
         android:layout_height="match_parent"
         android:background="#88000000"
-        android:gravity="center">
+        android:gravity="center"
+        android:visibility="gone">
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/loader"
