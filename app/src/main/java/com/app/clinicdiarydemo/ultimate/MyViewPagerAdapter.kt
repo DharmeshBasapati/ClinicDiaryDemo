@@ -20,9 +20,11 @@ class MyViewPagerAdapter(
     private val daysList: List<List<DateTime>>,
     private val daysCount: Int,
     private val eventsList: List<Item>,
-    val showAddEventSheet: (DateTime,String) -> Unit
+    val showAddEventSheet: (DateTime, String) -> Unit
 
 ) : RecyclerView.Adapter<MyViewPagerAdapter.ViewHolder>() {
+
+    private lateinit var tempBinding: RowItemViewPagerBinding
 
     inner class ViewHolder(var binding: RowItemViewPagerBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -33,11 +35,17 @@ class MyViewPagerAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         with(holder) {
+            tempBinding = binding
             binding.apply {
 
-                rvEvents.layoutManager = GridLayoutManager(itemView.context, daysList[position].size)
+                rvEvents.layoutManager =
+                    GridLayoutManager(itemView.context, daysList[position].size)
 
-                rvEvents.adapter = MyWeekViewAdapter(eventsList,daysList[position], daysCount){s1,s2 -> showAddEventSheet(s1,s2)}
+                rvEvents.adapter = MyWeekViewAdapter(
+                    eventsList,
+                    daysList[position],
+                    daysCount
+                ) { s1, s2 -> showAddEventSheet(s1, s2) }
 
                 lnrDates.removeAllViews()
 
@@ -50,18 +58,26 @@ class MyViewPagerAdapter(
                     val tvDay = inflater.findViewById<TextView>(R.id.tvDay)
                     val tvDate = inflater.findViewById<TextView>(R.id.tvDate)
 
-                    tvDay.text = CalendarUtils.convertDateTimeToString(element,"E")
-                    tvDate.text = CalendarUtils.convertDateTimeToString(element,"dd")
+                    tvDay.text = CalendarUtils.convertDateTimeToString(element, "E")
+                    tvDate.text = CalendarUtils.convertDateTimeToString(element, "dd")
 
                     lnrDayDateRoot.layoutParams =
                         LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1F)
 
-                    if (CalendarUtils.convertDateTimeToString(DateTime.now(), Constants.ddMMyyyy) == CalendarUtils.convertDateTimeToString(element,
+                    if (CalendarUtils.convertDateTimeToString(
+                            DateTime.now(),
                             Constants.ddMMyyyy
-                        )) {
+                        ) == CalendarUtils.convertDateTimeToString(
+                            element,
+                            Constants.ddMMyyyy
+                        )
+                    ) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             tvDate.setTextColor(itemView.context.getColor(R.color.white))
-                            tvDate.background = AppCompatResources.getDrawable(itemView.context,R.drawable.today_circle_drawable)
+                            tvDate.background = AppCompatResources.getDrawable(
+                                itemView.context,
+                                R.drawable.today_circle_drawable
+                            )
                         }
                     } else {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -100,6 +116,7 @@ class MyViewPagerAdapter(
                             super.onScrolled(recyclerView, dx, dy)
                             listener.onEventScrolled(dx, dy)
                         }
+
 
                     })
 

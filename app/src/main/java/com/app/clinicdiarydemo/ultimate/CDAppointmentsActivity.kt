@@ -15,24 +15,24 @@ import com.app.clinicdiarydemo.R
 import com.app.clinicdiarydemo.databinding.ActivityTheUltimateTryBinding
 import com.app.clinicdiarydemo.network.builder.RetrofitBuilder
 import com.app.clinicdiarydemo.network.model.*
+import com.app.clinicdiarydemo.ultimate.CalendarUtils.getDaysListToShowInHeader
+import com.app.clinicdiarydemo.ultimate.CalendarUtils.getMonth
 import com.app.clinicdiarydemo.ultimate.Constants.accessTokenForCalendarAPI
 import com.app.clinicdiarydemo.ultimate.Constants.apiKey
 import com.app.clinicdiarydemo.ultimate.Constants.calendarId
 import com.app.clinicdiarydemo.ultimate.Constants.clientID
 import com.app.clinicdiarydemo.ultimate.Constants.ddMMyyyy
 import com.app.clinicdiarydemo.ultimate.Constants.grantTypeForRefreshToken
-import com.app.clinicdiarydemo.ultimate.CalendarUtils.getDaysListToShowInHeader
-import com.app.clinicdiarydemo.ultimate.CalendarUtils.getMonth
 import net.openid.appauth.*
 import org.joda.time.DateTime
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.util.*
-import kotlin.collections.ArrayList
 
 
-class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, LoadingListener {
+class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, LoadingListener
+     {
 
     private lateinit var eventsList: List<Item>
 
@@ -54,24 +54,13 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
 
         if (prefs.accessToken!!.isEmpty()) {
             fetchAccessToken()
-        } else if(prefs.calendarID!!.isNotEmpty()) {
+        } else if (prefs.calendarID!!.isNotEmpty()) {
             fetchMyEvents()
         }
 
-        //doRefreshToken()
+        binding.rvHours.layoutManager = LinearLayoutManager(this@CDAppointmentsActivity)
 
-        val cellDate = CalendarUtils.convertDateTimeToString(
-            DateTime.parse("2021-12-03T14:28:23.193+05:30"),
-            "yyyy-MM-dd"
-        )
-        val cellTime = CalendarUtils.convertDateToString(
-            CalendarUtils.getDateFromString("03:30 PM", "hh:mm a"),
-            "HH:mm:ss"
-        )
-        val resultedCellDateTime: DateTime =
-            CalendarUtils.convertStringToDateTime("${cellDate}T${cellTime}Z")
-
-        Log.d("TAG", "resultedCellDateTime: $resultedCellDateTime")
+        binding.rvHours.adapter = MyHoursListAdapter(CalendarUtils.myTimeSlotsList)
 
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
 
@@ -115,6 +104,8 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
             }
         })
 
+
+
     }
 
     private fun fetchMyEvents() {
@@ -123,21 +114,36 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
 
         showProgress(true)
         RetrofitBuilder.focusApiServices.listEvents(
-            prefs.calendarID!!, prefs.accessToken!!,
+            prefs.calendarID!!, "Bearer ${prefs.accessToken!!}",
         ).enqueue(object : Callback<ListEventsResponse> {
             override fun onResponse(
                 call: Call<ListEventsResponse>,
                 response: Response<ListEventsResponse>
             ) {
                 showProgress(false)
-                Log.d(
-                    "TAG",
-                    "onResponse: Events Listed Successfully - ${response.body()}"
-                )
 
-                eventsList = response.body()?.items ?: arrayListOf()
+                if (response.code() == 200) {
+                    Log.d(
+                        "TAG",
+                        "onResponse: Events Listed Successfully - ${response.body()}"
+                    )
 
-                setDaysView(currentDaysView)
+                    eventsList = response.body()?.items ?: arrayListOf()
+
+                    setDaysView(currentDaysView)
+
+                } else if (response.code() == 401) {
+
+                    //Request had invalid authentication credentials.
+                    // Expected OAuth 2 access token, login cookie or other valid authentication credential.
+                    doRefreshToken()
+
+                } else if (response.code() == 403) {
+
+                    //The request is missing a valid API key.
+
+                }
+
 
             }
 
@@ -173,6 +179,7 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
                 )
 
                 prefs.accessToken = response.body()?.access_token
+                fetchMyEvents()
             }
 
             override fun onFailure(call: Call<RefreshTokenResponse>, t: Throwable) {
@@ -233,12 +240,12 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
                     Log.d("TAG", "Initial Access Token : ${response?.accessToken}")
                     accessTokenForCalendarAPI = "Bearer ${response?.accessToken}"
 
-                    prefs.accessToken = "Bearer ${response?.accessToken}"
+                    prefs.accessToken = response?.accessToken
                     prefs.refreshToken = response?.refreshToken
 
                     if (prefs.calendarID!!.isEmpty()) {
                         insertNewCalendarUsingApi("Center Fresh")
-                    }else{
+                    } else {
                         fetchMyEvents()
                     }
                 }
@@ -254,7 +261,7 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
         RetrofitBuilder.focusApiServices.insertCalendarType(
             InsertCalendarRequest(newEventTitle),
             apiKey,
-            prefs.accessToken!!
+            "Bearer ${prefs.accessToken!!}"
         )
             .enqueue(object : Callback<InsertCalendarResponse> {
                 override fun onResponse(
@@ -306,10 +313,6 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
             ) { selectedDate, selectedTimeSlot ->
                 showAddEventSheet(selectedDate, selectedTimeSlot)
             }
-
-        binding.rvHours.layoutManager = LinearLayoutManager(this@CDAppointmentsActivity)
-
-        binding.rvHours.adapter = MyHoursListAdapter(CalendarUtils.myTimeSlotsList)
 
         val updatedChunkedList = getDaysListToShowInHeader().chunked(daysCount)
 

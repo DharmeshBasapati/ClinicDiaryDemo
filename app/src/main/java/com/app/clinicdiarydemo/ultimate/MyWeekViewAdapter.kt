@@ -11,6 +11,7 @@ import com.app.clinicdiarydemo.databinding.RowItemWeekGridBinding
 import com.app.clinicdiarydemo.network.model.Item
 import com.app.clinicdiarydemo.ultimate.Constants.timeSlotRowCount
 import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 
 class MyWeekViewAdapter(
     private val eventsList: List<Item>,
@@ -60,11 +61,25 @@ class MyWeekViewAdapter(
                         //CalendarUtils.convertStringToDateTime("${cellDate}T${cellTime}Z")
                         lnrDayEvents.visibility = View.GONE
                         eventsList.forEachIndexed { index, item ->
-                            val eventStartDate = CalendarUtils.convertDateTimeToString( DateTime.parse(item.start.dateTime), "yyyy-MM-dd")
-                            val eventStartTime = CalendarUtils.convertDateTimeToString( DateTime.parse(item.start.dateTime), "HH:mm:ss")
-                            if(cellDate == eventStartDate && cellTime == eventStartTime){
-                                Log.d("TAG", "$cellDate == $eventStartDate && $cellTime == $eventStartTime")
-                                Log.d("TAG", "CELL NUMBER #$position FOUND TO ADD EVENT INTO IT !!! ")
+                            val eventStartDate = CalendarUtils.convertDateTimeToString(
+                                DateTime.parse(item.start.dateTime).withZone(
+                                    DateTimeZone.getDefault()
+                                ), "yyyy-MM-dd"
+                            )
+                            val eventStartTime = CalendarUtils.convertDateTimeToString(
+                                DateTime.parse(item.start.dateTime).withZone(
+                                    DateTimeZone.getDefault()
+                                ), "HH:mm:ss"
+                            )
+                            if (cellDate == eventStartDate && cellTime == eventStartTime) {
+                                Log.d(
+                                    "TAG###",
+                                    "$cellDate == $eventStartDate && $cellTime == $eventStartTime"
+                                )
+                                Log.d(
+                                    "TAG###",
+                                    "CELL NUMBER #$position FOUND TO ADD EVENT INTO IT !!! "
+                                )
                                 lnrDayEvents.visibility = View.VISIBLE
                             }
                         }
