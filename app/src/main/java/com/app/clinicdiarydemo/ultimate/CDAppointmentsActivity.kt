@@ -19,10 +19,13 @@ import com.app.clinicdiarydemo.ultimate.CalendarUtils.getDaysListToShowInHeader
 import com.app.clinicdiarydemo.ultimate.CalendarUtils.getMonth
 import com.app.clinicdiarydemo.ultimate.Constants.accessTokenForCalendarAPI
 import com.app.clinicdiarydemo.ultimate.Constants.apiKey
-import com.app.clinicdiarydemo.ultimate.Constants.calendarId
+import com.app.clinicdiarydemo.ultimate.Constants.appCalendarName
+import com.app.clinicdiarydemo.ultimate.Constants.authEndPoint
+import com.app.clinicdiarydemo.ultimate.Constants.calendarScopes
 import com.app.clinicdiarydemo.ultimate.Constants.clientID
-import com.app.clinicdiarydemo.ultimate.Constants.ddMMyyyy
 import com.app.clinicdiarydemo.ultimate.Constants.grantTypeForRefreshToken
+import com.app.clinicdiarydemo.ultimate.Constants.redirectUri
+import com.app.clinicdiarydemo.ultimate.Constants.tokenEndPoint
 import net.openid.appauth.*
 import org.joda.time.DateTime
 import retrofit2.Call
@@ -31,16 +34,15 @@ import retrofit2.Response
 import java.util.*
 
 
-class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, LoadingListener
-     {
+class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, LoadingListener {
+
+    private lateinit var daysListShowingInHeader: List<List<DateTime>>
 
     private lateinit var eventsList: List<Item>
 
     private lateinit var authService: AuthorizationService
 
     private lateinit var binding: ActivityTheUltimateTryBinding
-
-    private var isDayViewSelected: Boolean = false
 
     private var currentDaysView = 1
 
@@ -58,54 +60,44 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
             fetchMyEvents()
         }
 
-        binding.rvHours.layoutManager = LinearLayoutManager(this@CDAppointmentsActivity)
+        setupHoursList()
 
-        binding.rvHours.adapter = MyHoursListAdapter(CalendarUtils.myTimeSlotsList)
+        setupDaysListToShowInHeader()
 
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
 
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
+            override fun onPageScrolled(
+                position: Int,
+                positionOffset: Float,
+                positionOffsetPixels: Int
+            ) {
 
-                when (currentDaysView) {
+                when (daysListShowingInHeader[position].size) {
                     3 -> {
-
-                        if (getDaysListToShowInHeader().chunked(currentDaysView)[position].size == 3) {
-                            supportActionBar?.title =
-                                getMonth(getDaysListToShowInHeader().chunked(currentDaysView)[position][1])
-                        } else {
-                            supportActionBar?.title =
-                                getMonth(getDaysListToShowInHeader().chunked(currentDaysView)[position][0])
-                        }
-
+                        supportActionBar?.title =
+                            getMonth(daysListShowingInHeader[position][1])
                     }
                     7 -> {
-
-                        if (getDaysListToShowInHeader().chunked(currentDaysView)[position].size == 7) {
-                            supportActionBar?.title =
-                                getMonth(getDaysListToShowInHeader().chunked(currentDaysView)[position][3])
-                        } else {
-                            supportActionBar?.title =
-                                getMonth(getDaysListToShowInHeader().chunked(currentDaysView)[position][0])
-                        }
-
+                        supportActionBar?.title =
+                            getMonth(daysListShowingInHeader[position][3])
                     }
                     else -> {
-                        Log.d(
-                            "TAG",
-                            "onPageSelected: ${getDaysListToShowInHeader().chunked(currentDaysView)[position][0]}"
-                        )
-
                         supportActionBar?.title =
-                            getMonth(getDaysListToShowInHeader().chunked(currentDaysView)[position][0])
+                            getMonth(daysListShowingInHeader[position][0])
                     }
                 }
-
             }
         })
 
+    }
 
+    private fun setupDaysListToShowInHeader() {
+        daysListShowingInHeader = getDaysListToShowInHeader().chunked(currentDaysView)
+    }
 
+    private fun setupHoursList() {
+        binding.rvHours.layoutManager = LinearLayoutManager(this@CDAppointmentsActivity)
+        binding.rvHours.adapter = MyHoursListAdapter(CalendarUtils.myTimeSlotsList)
     }
 
     private fun fetchMyEvents() {
@@ -122,26 +114,30 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
             ) {
                 showProgress(false)
 
-                if (response.code() == 200) {
-                    Log.d(
-                        "TAG",
-                        "onResponse: Events Listed Successfully - ${response.body()}"
-                    )
+                when {
+                    response.code() == 200 -> {
+                        Log.d(
+                            "TAG",
+                            "onResponse: Events Listed Successfully - ${response.body()}"
+                        )
 
-                    eventsList = response.body()?.items ?: arrayListOf()
+                        eventsList = response.body()?.items ?: arrayListOf()
 
-                    setDaysView(currentDaysView)
+                        updateCalendarView(currentDaysView)
 
-                } else if (response.code() == 401) {
+                    }
+                    response.code() == 401 -> {
 
-                    //Request had invalid authentication credentials.
-                    // Expected OAuth 2 access token, login cookie or other valid authentication credential.
-                    doRefreshToken()
+                        //Request had invalid authentication credentials.
+                        // Expected OAuth 2 access token, login cookie or other valid authentication credential.
+                        doRefreshToken()
 
-                } else if (response.code() == 403) {
+                    }
+                    response.code() == 403 -> {
 
-                    //The request is missing a valid API key.
+                        //The request is missing a valid API key.
 
+                    }
                 }
 
 
@@ -153,9 +149,7 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
                     "TAG",
                     "onFailure: Events list API - ${t.message.toString()}"
                 )
-
             }
-
 
         })
 
@@ -197,8 +191,8 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
         Log.d("TAG", "fetchAccessToken: Called")
 
         val serviceConfig = AuthorizationServiceConfiguration(
-            Uri.parse("https://accounts.google.com/o/oauth2/auth"),
-            Uri.parse("https://oauth2.googleapis.com/token")
+            Uri.parse(authEndPoint),
+            Uri.parse(tokenEndPoint)
         )
 
         val authRequestBuilder = AuthorizationRequest.Builder(
@@ -206,14 +200,14 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
             clientID,
             ResponseTypeValues.CODE,
             Uri.parse(
-                "http://localhost/urn:ietf:wg:oauth:2.0:oob"
+                redirectUri
             )
         )
 
         authService = AuthorizationService(this)
 
         val authRequest =
-            authRequestBuilder.setScope("https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events")
+            authRequestBuilder.setScope(calendarScopes)
                 .build()
 
         val authIntent = authService.getAuthorizationRequestIntent(authRequest)
@@ -227,24 +221,18 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
         if (requestCode == 111) {
 
             val authResponse = data?.let { AuthorizationResponse.fromIntent(it) }
-            Log.d(
-                "TAG",
-                "onActivityResult: authResponse Auth Code = ${authResponse?.authorizationCode} "
-            )
 
             authResponse?.createTokenExchangeRequest()?.let {
                 authService.performTokenRequest(
                     it
                 ) { response, ex ->
-                    Log.d("TAG", "on Token Exchange Response : ${response?.toString()}")
-                    Log.d("TAG", "Initial Access Token : ${response?.accessToken}")
                     accessTokenForCalendarAPI = "Bearer ${response?.accessToken}"
 
                     prefs.accessToken = response?.accessToken
                     prefs.refreshToken = response?.refreshToken
 
                     if (prefs.calendarID!!.isEmpty()) {
-                        insertNewCalendarUsingApi("Center Fresh")
+                        insertNewCalendarUsingApi()
                     } else {
                         fetchMyEvents()
                     }
@@ -253,13 +241,13 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
         }
     }
 
-    private fun insertNewCalendarUsingApi(newEventTitle: String) {
+    private fun insertNewCalendarUsingApi() {
 
         Log.d("TAG", "insertNewCalendarUsingApi: Called")
 
         showProgress(true)
         RetrofitBuilder.focusApiServices.insertCalendarType(
-            InsertCalendarRequest(newEventTitle),
+            InsertCalendarRequest(appCalendarName),
             apiKey,
             "Bearer ${prefs.accessToken!!}"
         )
@@ -270,11 +258,10 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
                 ) {
                     showProgress(false)
                     Log.d("TAG", "onResponse: $response")
-                    calendarId = response.body()!!.id
                     prefs.calendarID = response.body()!!.id
                     Toast.makeText(
                         this@CDAppointmentsActivity,
-                        "$newEventTitle added as new calendar type.",
+                        "$appCalendarName added as new calendar type.",
                         Toast.LENGTH_SHORT
                     ).show()
                     fetchMyEvents()
@@ -289,34 +276,30 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
 
     }
 
-    private fun showProgress(needToShow: Boolean) {
-        if (needToShow) {
-            binding.lnrProgress.visibility = View.VISIBLE
-        } else {
-            binding.lnrProgress.visibility = View.GONE
-        }
-
+    private fun showProgress(needToShow: Boolean) = if (needToShow) {
+        binding.lnrProgress.visibility = View.VISIBLE
+    } else {
+        binding.lnrProgress.visibility = View.GONE
     }
 
-    private fun setDaysView(daysCount: Int) {
+    private fun updateCalendarView(daysCount: Int) {
+
+        currentDaysView = daysCount
+
+        setupDaysListToShowInHeader()
 
         CalendarUtils.setDaysListAccordingToViews(daysCount)
 
         CalendarUtils.setTimeSlotsSelectionList(daysCount)
 
-        binding.viewPager.adapter =
-            MyViewPagerAdapter(
-                this@CDAppointmentsActivity,
-                getDaysListToShowInHeader().chunked(daysCount),
-                daysCount,
-                eventsList
-            ) { selectedDate, selectedTimeSlot ->
-                showAddEventSheet(selectedDate, selectedTimeSlot)
-            }
+        binding.viewPager.adapter = MyViewPagerAdapter(
+            this@CDAppointmentsActivity, daysListShowingInHeader,
+            daysCount, eventsList
+        ) { selectedDate, selectedTimeSlot ->
+            showAddEventSheet(selectedDate, selectedTimeSlot)
+        }
 
-        val updatedChunkedList = getDaysListToShowInHeader().chunked(daysCount)
-
-        updatedChunkedList.forEachIndexed { mainIndex, list ->
+        /*updatedDaysList.forEachIndexed { mainIndex, list ->
 
             list.forEachIndexed { _, dateTime ->
                 if (CalendarUtils.convertDateTimeToString(
@@ -329,7 +312,7 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
                     binding.viewPager.setCurrentItem(mainIndex, true)
                 }
             }
-        }
+        }*/
 
     }
 
@@ -343,38 +326,30 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
         item.isChecked = true
 
         when (item.itemId) {
             R.id.menuOneDay -> {
-                isDayViewSelected = true
-                currentDaysView = 1
-                setDaysView(currentDaysView)
-
+                updateCalendarView(1)
             }
             R.id.menuThreeDay -> {
-                isDayViewSelected = false
-                currentDaysView = 3
-                setDaysView(currentDaysView)
+                updateCalendarView(3)
             }
             R.id.menuWeek -> {
-                isDayViewSelected = false
-                currentDaysView = 7
-                setDaysView(currentDaysView)
+                updateCalendarView(7)
             }
         }
         return true
     }
 
     private fun showAddEventSheet(selectedDate: DateTime, selectedTimeSlot: String) {
-
         val addEventBottomSheet = AddEventBottomSheet()
         val bundle = Bundle()
         bundle.putString("IN_DATE", selectedDate.toString())
         bundle.putString("IN_TIME", selectedTimeSlot)
         addEventBottomSheet.arguments = bundle
         addEventBottomSheet.show(supportFragmentManager, "AddEventBottomSheet")
-
     }
 
     override fun checkIfAPICalling(isLoading: Boolean) {

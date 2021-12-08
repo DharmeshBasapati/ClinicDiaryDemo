@@ -87,26 +87,6 @@ class MyViewPagerAdapter(
                     }
                     lnrDates.addView(lnrDayDateRoot)
 
-                    /*(inflater as TextView).apply {
-                        text = CalendarUtils.getDateToShowInHeader(element)
-                        layoutParams =
-                            LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1F)
-                        if (CalendarUtils.convertDateTimeToString(DateTime.now(), Constants.ddMMyyyy) == CalendarUtils.convertDateTimeToString(element,
-                                Constants.ddMMyyyy
-                            )) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                setTextColor(itemView.context.getColor(R.color.white))
-                                setBackgroundColor(itemView.context.getColor(R.color.today_color))
-                            }
-                        } else {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                setTextColor(itemView.context.getColor(R.color.mild_black))
-                                setBackgroundColor(Color.TRANSPARENT)
-                            }
-                        }
-                        lnrDates.addView(this)
-                    }*/
-
                 }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -125,7 +105,7 @@ class MyViewPagerAdapter(
         }
     }
 
-    private fun getDate(dateTime: DateTime) = dateTime.toString(dateAndDayFormatToShowInHeader)
+
 
     override fun getItemCount() = daysList.size
 

@@ -15,8 +15,6 @@ class MyHoursListAdapter(private val timeSlots: List<String>): RecyclerView.Adap
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         with(holder){
             binding.apply {
-                /*val hourDateTime = DateTime().withDate(2000, 1, 1).withTime(0, 0, 0, 0)
-                val formattedHours = getHours(hourDateTime.withHourOfDay(position))*/
                 weeklyViewHourTextview.text = timeSlots[position]
 
             }
@@ -24,8 +22,6 @@ class MyHoursListAdapter(private val timeSlots: List<String>): RecyclerView.Adap
     }
 
     override fun getItemCount() = timeSlots.size
-
-    private fun getHours(dateTime: DateTime) = dateTime.toString(getHourPattern())
 
     private fun getHourPattern() = "h a"
 }
