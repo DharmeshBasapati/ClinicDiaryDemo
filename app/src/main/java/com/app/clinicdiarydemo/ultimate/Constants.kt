@@ -2,7 +2,7 @@ package com.app.clinicdiarydemo.ultimate
 
 object Constants {
 
-    const val appCalendarName = "Clinik Book"
+    const val appCalendarName = "Black Birdie"
 
     const val authEndPoint = "https://accounts.google.com/o/oauth2/auth"
 
@@ -13,8 +13,6 @@ object Constants {
     const val calendarScopes = "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events"
 
     const val apiKey = "AIzaSyCR0jAUvVLfbDot1hYCLTIJnupgdl78nJ4"
-
-    var accessTokenForCalendarAPI = ""
 
     const val timeSlotRowCount = 48
 

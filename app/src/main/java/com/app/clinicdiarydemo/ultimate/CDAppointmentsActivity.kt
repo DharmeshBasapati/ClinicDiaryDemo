@@ -17,7 +17,6 @@ import com.app.clinicdiarydemo.network.builder.RetrofitBuilder
 import com.app.clinicdiarydemo.network.model.*
 import com.app.clinicdiarydemo.ultimate.CalendarUtils.getDaysListToShowInHeader
 import com.app.clinicdiarydemo.ultimate.CalendarUtils.getMonth
-import com.app.clinicdiarydemo.ultimate.Constants.accessTokenForCalendarAPI
 import com.app.clinicdiarydemo.ultimate.Constants.apiKey
 import com.app.clinicdiarydemo.ultimate.Constants.appCalendarName
 import com.app.clinicdiarydemo.ultimate.Constants.authEndPoint
@@ -106,7 +105,7 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
 
         showProgress(true)
         RetrofitBuilder.focusApiServices.listEvents(
-            prefs.calendarID!!, "Bearer ${prefs.accessToken!!}",
+            prefs.calendarID!!, prefs.accessToken!!,
         ).enqueue(object : Callback<ListEventsResponse> {
             override fun onResponse(
                 call: Call<ListEventsResponse>,
@@ -155,7 +154,7 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
 
     }
 
-    private fun doRefreshToken() {
+     fun doRefreshToken() {
         showProgress(true)
         RetrofitBuilder.refreshTokenApiServices.refreshToken(
             clientID,
@@ -172,7 +171,7 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
                     "onResponse: doRefreshToken - New Access Token - ${response.body()?.access_token}"
                 )
 
-                prefs.accessToken = response.body()?.access_token
+                prefs.accessToken = "Bearer ${response.body()?.access_token}"
                 fetchMyEvents()
             }
 
@@ -226,9 +225,8 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
                 authService.performTokenRequest(
                     it
                 ) { response, ex ->
-                    accessTokenForCalendarAPI = "Bearer ${response?.accessToken}"
 
-                    prefs.accessToken = response?.accessToken
+                    prefs.accessToken = "Bearer ${response?.accessToken}"
                     prefs.refreshToken = response?.refreshToken
 
                     if (prefs.calendarID!!.isEmpty()) {
@@ -249,7 +247,7 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
         RetrofitBuilder.focusApiServices.insertCalendarType(
             InsertCalendarRequest(appCalendarName),
             apiKey,
-            "Bearer ${prefs.accessToken!!}"
+            prefs.accessToken!!
         )
             .enqueue(object : Callback<InsertCalendarResponse> {
                 override fun onResponse(
@@ -313,7 +311,7 @@ class CDAppointmentsActivity : AppCompatActivity(), EventScrollListener, Loading
                 }
             }
         }*/
-
+        binding.viewPager.setPageTransformer(ZoomOutPageTransformer())
     }
 
     override fun onEventScrolled(scrollXPos: Int, scrollYPos: Int) {

@@ -3,7 +3,6 @@ package com.app.clinicdiarydemo.ultimate
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.CalendarContract
 import android.util.Log
@@ -11,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import com.app.clinicdiarydemo.databinding.AddEventBottomSheetBinding
 import com.app.clinicdiarydemo.network.builder.RetrofitBuilder
 import com.app.clinicdiarydemo.network.model.EventRequest
@@ -328,13 +326,26 @@ class AddEventBottomSheet : BottomSheetDialogFragment(),
         ).enqueue(object : Callback<EventResponse> {
             override fun onResponse(call: Call<EventResponse>, response: Response<EventResponse>) {
                 loadingListener.checkIfAPICalling(false)
-                Log.d(
-                    "TAG",
-                    "onResponse: Event Added - ${response.body()}"
-                )
-                Toast.makeText(requireContext(), "Event Added Successfully.", Toast.LENGTH_SHORT)
-                    .show()
-                dismiss()
+
+                when {
+                    response.code() == 200 -> {
+                        Toast.makeText(
+                            requireContext(),
+                            "Event Added Successfully.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        dismiss()
+                    }
+                    response.code() == 401 -> {
+                        //Request had invalid authentication credentials.
+                        // Expected OAuth 2 access token, login cookie or other valid authentication credential.
+                        ((activity) as CDAppointmentsActivity).doRefreshToken()
+                    }
+                    response.code() == 403 -> {
+                        //The request is missing a valid API key.
+                    }
+
+                }
             }
 
             override fun onFailure(call: Call<EventResponse>, t: Throwable) {
